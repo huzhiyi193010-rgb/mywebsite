@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -12,94 +13,83 @@
 <style>
 
 body{
-    background:#f4f8ff;
-    font-family:Arial;
+background:#f4f8ff;
+font-family:Arial;
 }
 
 .navbar{
-    background:white;
-    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+background:white;
+box-shadow:0 2px 10px rgba(0,0,0,0.05);
 }
 
 .hero{
-    padding:100px 20px;
-    text-align:center;
+padding:90px 20px;
+text-align:center;
 }
 
 .hero h1{
-    font-size:65px;
-    font-weight:700;
-    color:#0d6efd;
+font-size:60px;
+font-weight:700;
+color:#0d6efd;
 }
 
 .hero p{
-    color:#666;
-    font-size:22px;
-    margin-top:20px;
-}
-
-.feature-box{
-    background:white;
-    border-radius:20px;
-    padding:35px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.05);
-    transition:0.3s;
-    height:100%;
-}
-
-.feature-box:hover{
-    transform:translateY(-5px);
+font-size:22px;
+color:#666;
+margin-top:20px;
 }
 
 .chat-container{
-    margin-top:80px;
-    background:white;
-    border-radius:25px;
-    padding:30px;
-    box-shadow:0 5px 30px rgba(0,0,0,0.08);
+background:white;
+border-radius:25px;
+padding:30px;
+margin-top:50px;
+box-shadow:0 5px 30px rgba(0,0,0,0.08);
 }
 
-.chat-messages{
-    height:350px;
-    overflow-y:auto;
-    border:1px solid #eee;
-    border-radius:15px;
-    padding:20px;
-    background:#fafcff;
+.chat-box{
+height:400px;
+overflow-y:auto;
+border:1px solid #eee;
+border-radius:15px;
+padding:20px;
+background:#fafcff;
 }
 
-.user-message{
-    text-align:right;
-    margin-bottom:15px;
+.message{
+margin-bottom:15px;
 }
 
-.ai-message{
-    text-align:left;
-    margin-bottom:15px;
+.user{
+text-align:right;
 }
 
-.message-bubble{
-    display:inline-block;
-    padding:12px 18px;
-    border-radius:15px;
-    max-width:70%;
+.ai{
+text-align:left;
 }
 
-.user-message .message-bubble{
-    background:#0d6efd;
-    color:white;
+.bubble{
+display:inline-block;
+padding:12px 18px;
+border-radius:15px;
+max-width:70%;
 }
 
-.ai-message .message-bubble{
-    background:#e9f1ff;
-    color:#333;
+.user .bubble{
+background:#0d6efd;
+color:white;
+}
+
+.ai .bubble{
+background:#e9f1ff;
+color:#333;
 }
 
 footer{
-    margin-top:100px;
-    text-align:center;
-    padding:40px;
-    color:#888;
+margin-top:80px;
+padding:40px;
+text-align:center;
+color:#888;
 }
 
 </style>
@@ -107,8 +97,6 @@ footer{
 </head>
 
 <body>
-
-<!-- 导航栏 -->
 
 <nav class="navbar navbar-expand-lg">
 
@@ -118,39 +106,9 @@ footer{
 Chet GPT 6.0
 </a >
 
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-<span class="navbar-toggler-icon"></span>
-</button>
-
-<div class="collapse navbar-collapse" id="menu">
-
-<ul class="navbar-nav ms-auto">
-
-<li class="nav-item">
-<a class="nav-link" href="#">Home</a >
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">Pricing</a >
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">API</a >
-</li>
-
-<li class="nav-item">
-<a class="nav-link" href="#">Contact</a >
-</li>
-
-</ul>
-
-</div>
-
 </div>
 
 </nav>
-
-<!-- 主区域 -->
 
 <section class="hero">
 
@@ -159,92 +117,26 @@ Chet GPT 6.0
 <h1>Chet GPT 6.0</h1>
 
 <p>
-Next Generation AI Platform Based on GPT Technology
+Next Generation AI Platform
 </p >
-
-<div class="mt-4">
-
-<a href="#chat" class="btn btn-primary btn-lg">
-Start Chat
-</a >
-
-<a href="https://platform.openai.com/docs" target="_blank" class="btn btn-outline-primary btn-lg ms-2">
-API Docs
-</a >
-
-</div>
 
 </div>
 
 </section>
-
-<!-- 功能区 -->
 
 <section class="container">
-
-<div class="row g-4">
-
-<div class="col-md-4">
-
-<div class="feature-box">
-
-<h3>Fast GPT Chat</h3>
-
-<p>
-Ultra fast AI conversation experience powered by advanced GPT models.
-</p >
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-box">
-
-<h3>API Integration</h3>
-
-<p>
-Stable and scalable API services for developers worldwide.
-</p >
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="feature-box">
-
-<h3>Secure Platform</h3>
-
-<p>
-Reliable AI infrastructure with global deployment capability.
-</p >
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- AI聊天 -->
-
-<section class="container" id="chat">
 
 <div class="chat-container">
 
 <h2 class="mb-4">
-AI Chat Demo
+AI Chat
 </h2>
 
-<div class="chat-messages" id="chatMessages">
+<div class="chat-box" id="chatBox">
 
-<div class="ai-message">
-<div class="message-bubble">
-Hello! I am Chet GPT 6.0. How can I help you today?
+<div class="message ai">
+<div class="bubble">
+Hello! I am Chet GPT 6.0.
 </div>
 </div>
 
@@ -266,55 +158,105 @@ Send
 
 <footer>
 
-© 2026 Chet GPT 6.0 All Rights Reserved
+© 2026 Chet GPT 6.0
 
 </footer>
 
 <script>
 
-function sendMessage(){
+const API_KEY = "YOUR_API_KEY";
 
-let input=document.getElementById("userInput");
+const API_URL = "https://one-api-production-ed23.up.railway.app/v1/chat/completions";
 
-let message=input.value;
+async function sendMessage(){
 
-if(message.trim()===""){
-return;
+const input = document.getElementById("userInput");
+
+const text = input.value;
+
+if(!text) return;
+
+const chatBox = document.getElementById("chatBox");
+
+chatBox.innerHTML += `
+<div class="message user">
+<div class="bubble">
+${text}
+</div>
+</div>
+`;
+
+input.value = "";
+
+chatBox.innerHTML += `
+<div class="message ai" id="loading">
+<div class="bubble">
+Thinking...
+</div>
+</div>
+`;
+
+chatBox.scrollTop = chatBox.scrollHeight;
+
+try{
+
+const response = await fetch(API_URL, {
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer " + API_KEY
+},
+
+body:JSON.stringify({
+
+model:"gpt-4o-mini",
+
+messages:[
+{
+role:"user",
+content:text
 }
+]
 
-let chat=document.getElementById("chatMessages");
+})
 
-chat.innerHTML += `
-<div class="user-message">
-<div class="message-bubble">
-${message}
+});
+
+const data = await response.json();
+
+document.getElementById("loading").remove();
+
+const reply = data.choices[0].message.content;
+
+chatBox.innerHTML += `
+<div class="message ai">
+<div class="bubble">
+${reply}
 </div>
 </div>
 `;
 
-setTimeout(function(){
+chatBox.scrollTop = chatBox.scrollHeight;
 
-chat.innerHTML += `
-<div class="ai-message">
-<div class="message-bubble">
-This is a demo AI response. Your OneAPI integration will reply here later.
+}catch(error){
+
+document.getElementById("loading").remove();
+
+chatBox.innerHTML += `
+<div class="message ai">
+<div class="bubble">
+API Error
 </div>
 </div>
 `;
 
-chat.scrollTop=chat.scrollHeight;
-
-},800);
-
-input.value="";
-
-chat.scrollTop=chat.scrollHeight;
+}
 
 }
 
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 
