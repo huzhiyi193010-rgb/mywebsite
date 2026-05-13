@@ -2,9 +2,14 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>AI Pro SaaS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小胡GPT pro</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial;
@@ -24,10 +29,11 @@ body {
 
 .history-item {
   padding: 10px;
-  margin: 5px 0;
+  margin: 6px 0;
   background: #1f2937;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
 }
 
 /* 主区域 */
@@ -35,6 +41,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 header {
@@ -42,6 +49,8 @@ header {
   background: #111827;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
 }
 
 #chatBox {
@@ -51,20 +60,30 @@ header {
 }
 
 .msg {
-  max-width: 70%;
+  max-width: 75%;
   padding: 10px;
   margin: 8px;
   border-radius: 10px;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.user { background: #2563eb; margin-left: auto; }
-.ai { background: #374151; }
+.user {
+  background: #2563eb;
+  margin-left: auto;
+}
 
+.ai {
+  background: #374151;
+  margin-right: auto;
+}
+
+/* 有什么问题告诉哥 */
 .inputBar {
   display: flex;
   padding: 10px;
   background: #111827;
+  gap: 8px;
 }
 
 input {
@@ -72,10 +91,10 @@ input {
   padding: 10px;
   border: none;
   border-radius: 8px;
+  outline: none;
 }
 
 button {
-  margin-left: 10px;
   padding: 10px 14px;
   background: #22c55e;
   border: none;
@@ -83,20 +102,66 @@ button {
   color: white;
   cursor: pointer;
 }
+
+button:hover {
+  background: #16a34a;
+}
+
+/* 📱 手机适配 */
+@media (max-width: 768px) {
+
+  body {
+    flex-direction: column;
+  }
+
+  #sidebar {
+    width: 100%;
+    height: 55px;
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 5px;
+  }
+
+  .history-item {
+    display: inline-block;
+    margin-right: 8px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  header {
+    font-size: 13px;
+  }
+
+  .msg {
+    max-width: 90%;
+    font-size: 14px;
+  }
+
+  input {
+    font-size: 14px;
+  }
+
+  button {
+    padding: 10px;
+  }
+}
 </style>
 </head>
 
 <body>
 
+<!-- 左侧历史 -->
 <div id="sidebar">
-  <h3>💬 History</h3>
-  <div class="history-item">新对话</div>
+  <div class="history-item">💬 新对话</div>
 </div>
 
+<!-- 主区域 -->
 <div id="main">
 
 <header>
-  <span>🤖 AI Pro SaaS</span>
+  <span>🤖小胡GPT pro</span>
   <select id="modelSelect">
     <option value="openrouter/free">Free Model</option>
     <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3</option>
@@ -106,7 +171,7 @@ button {
 <div id="chatBox"></div>
 
 <div class="inputBar">
-  <input id="userInput" placeholder="输入问题..." />
+  <input id="userInput" placeholder="输入消息..." />
   <button onclick="sendMessage()">发送</button>
 </div>
 
@@ -114,9 +179,12 @@ button {
 
 <script>
 
+// ======================
+// 🔥 改这里：你的New API
+// ======================
 const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
 
-// 🧠 多轮记忆
+// 🧠 对话记忆
 let messages = [];
 
 async function sendMessage(){
@@ -132,13 +200,15 @@ async function sendMessage(){
 
   messages.push({ role: "user", content: text });
 
-  const aiBox = addMsg("ai", "thinking...");
+  const aiBox = addMsg("ai", "AI思考中...");
 
   try {
 
     const res = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         model: model,
         messages: messages
@@ -147,35 +217,44 @@ async function sendMessage(){
 
     const data = await res.json();
 
-    const reply = data.choices?.[0]?.message?.content || "error";
+    let reply = data.choices?.[0]?.message?.content || "无返回内容";
 
     messages.push({ role: "assistant", content: reply });
 
     typeWriter(aiBox, reply);
 
-  } catch (e) {
-    aiBox.innerText = "错误：" + e.message;
+  } catch (err) {
+    aiBox.innerText = "错误：" + err.message;
   }
 }
 
+// 添加消息
 function addMsg(role, text){
   const div = document.createElement("div");
   div.className = "msg " + role;
   div.innerText = text;
 
   document.getElementById("chatBox").appendChild(div);
+  scrollBottom();
   return div;
 }
 
+// 打字机效果
 function typeWriter(el, text){
   let i = 0;
   el.innerText = "";
 
-  const t = setInterval(() => {
+  const timer = setInterval(() => {
     el.innerText += text[i];
     i++;
-    if(i >= text.length) clearInterval(t);
+    if(i >= text.length) clearInterval(timer);
+    scrollBottom();
   }, 15);
+}
+
+function scrollBottom(){
+  const box = document.getElementById("chatBox");
+  box.scrollTop = box.scrollHeight;
 }
 
 </script>
