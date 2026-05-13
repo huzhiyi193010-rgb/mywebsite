@@ -120,47 +120,48 @@ button {
 <div id="box"></div>
 
 <div id="bar">
-  <input id="inp" placeholder="不管什么事都要和我说哦...">
-  <button onclick="send()">告诉我</button>
+  <input id="inp" placeholder="什么事都要跟我说哦...">
+  <button onclick="send()">发送</button>
 </div>
 
 <script>
 const box = document.getElementById('box');
 const inp = document.getElementById('inp');
 
+// 开机问候语库 随机不重复
+const helloList = [
+  "你好我是小胡同学哦",
+  "小胡同学在这里哦",
+  "小胡同学一直在哦",
+  "小胡同学没有睡着哦"
+];
+
 // 记录已用回复 永不重复
 let usedLines = JSON.parse(localStorage.getItem("usedLines") || "[]");
 
 // 心情等级关键词
 const keyWords = {
-  // 1级 轻度
   level1: ["累","烦","无聊","没劲","心情不好","丧"],
-  // 2级 中度
   level2: ["孤独","委屈","焦虑","压力","迷茫","内耗","想太多","孤单","自卑","压抑"],
-  // 3级 重度（回复最长 近百字）
   level3: ["崩溃","绝望","撑不住","想死","不想活","抑郁","无助","熬不下去"]
 };
 
-// 精准语录库 等级越高句子越长
+// 等级文案：等级越高句子越长
 const lib = {
-  // 短句 轻度
   level1: [
     "看得出来你心情有点闷闷的，不用勉强自己硬撑。",
     "偶尔情绪低落很正常，允许自己放松一下就好。",
     "不想勉强自己开心的话，安静歇一会也没关系。"
   ],
-  // 中句 中度
   level2: [
-    "我能感受到你心里的不安和委屈，敏感的人总是容易想太多，把所有情绪都藏在自己心里，真的辛苦你了。",
-    "孤独和迷茫缠在心里的滋味很难受，不用逼自己合群，也不用急着找答案，我会慢慢陪着你听你倾诉。",
-    "容易内耗、心思太重的人，总是习惯性为难自己，放过自己一点，你的感受本来就很值得被在意。"
+    "我能感受到你心里的不安和委屈，敏感的人总是容易想太多，把所有情绪都藏在心里，真的辛苦你了。",
+    "孤独和迷茫缠在心里很难受，不用逼自己合群，也不用急着找答案，我会慢慢陪着你听你倾诉。",
+    "心思太重容易内耗，总习惯性为难自己，试着放过自己一点，你的感受本来就很值得被在意。"
   ],
-  // 长句 重度 接近100字
   level3: [
-    "我知道你现在已经快要撑不住了，心里积攒了太多委屈和疲惫，不用假装坚强，也不用逼着自己一定要好起来，你可以脆弱，可以停下来，我会一直安安静静陪着你，不会让你一个人扛所有难受。",
-    "走到现在你已经咬牙坚持很久了，哪怕感觉绝望、熬不下去也没关系，不用跟别人解释你的情绪，不用故作乐观，在我这里你可以完全做自己，所有崩溃我都愿意接纳和陪着你。"
+    "我知道你现在已经快要撑不住了，心里积攒了太多委屈和疲惫，不用假装坚强，也不用逼着自己一定要好起来，你可以脆弱，可以停下来，我会一直安安静静陪着你。",
+    "走到现在你已经咬牙坚持很久了，哪怕感觉绝望、熬不下去也没关系，不用跟别人解释情绪，不用故作乐观，在我这里你可以完全做自己。"
   ],
-  // 日常闲聊 精准接话 不答非所问
   normal: [
     "我在认真听你说的每一句话，你可以慢慢把心里想法都说出来。",
     "嗯，我明白你想表达的感受，你继续说，我一直都在认真倾听。",
@@ -177,7 +178,7 @@ function getMoodLevel(text){
   return "normal";
 }
 
-// 从不重复选取回复
+// 不重复取回复
 function getUniqueReply(arr){
   let rest = arr.filter(item => !usedLines.includes(item));
   if(rest.length === 0){
@@ -191,282 +192,7 @@ function getUniqueReply(arr){
   return pick;
 }
 
-// 打字机效果
-function typeWrite(el, text){
-  el.innerText = "";
-  let i = 0;
-  function step(){
-    if(i < text.length){
-      el.innerText += text[i++];
-      box.scrollTop = box.scrollHeight;
-      setTimeout(step,15);
-    }
-  }
-  step();
-}
-
-// 添加消息 修复：自己发的消息正常显示
-function add(role, txt){
-  let d = document.createElement('div');
-  d.className = 'msg ' + role;
-  d.innerText = txt;
-  box.appendChild(d);
-  box.scrollTop = box.scrollHeight;
-  return d;
-}
-
-// 发送
-function send(){
-  let t = inp.value.trim();
-  if(!t) return;
-  inp.value = '';
-  
-  // 修复：用户消息正常显示
-  add('user', t);
-
-  let level = getMoodLevel(t);
-  let arr = lib[level];
-  let res = getUniqueReply(arr);
-
-  let aiDom = add('ai', '...');
-  setTimeout(() => typeWrite(aiDom, res), 300);
-}
-
-// 回车发送
-inp.addEventListener('keydown', e => {
-  if(e.key === 'Enter') send();
-});
-
-// 开屏动画
-window.onload = function(){
-  const splash = document.getElementById('splash');
-  const splashText = document.getElementById('splash-text');
-  setTimeout(()=>{
-    splashText.style.opacity = "1";
-    splashText.style.transform = "translateY(0)";
-  }, 200);
-  setTimeout(()=>{
-    splash.classList.add('hide');
-  }, 2200);
-}
-</script>
-
-</body>
-</html><!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<!-- 强制手机完美适配 -->
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<title>小胡GPT Pro</title>
-<style>
-html,body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
-  background: #0b1220;
-  color: #fff;
-  font-family: sans-serif;
-}
-
-/* ========== 新增：iOS开屏动画 ========== */
-#splash {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #0b1220;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  transition: opacity 0.8s ease;
-}
-#splash-text {
-  font-size: 28px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 1.2s ease, transform 1.2s ease;
-}
-#splash.hide {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* 聊天区域 适配不被输入框挡住 */
-#box {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 85px;
-  overflow-y: auto;
-  padding: 15px;
-  box-sizing: border-box;
-}
-
-/* 消息气泡 */
-.msg {
-  max-width: 75%;
-  border-radius: 18px;
-  padding: 12px 15px;
-  margin: 8px 0;
-  line-height: 1.6;
-  font-size: 16px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.user {
-  margin-left: auto;
-  background: #007aff;
-  border-bottom-right-radius: 5px;
-}
-.ai {
-  margin-right: auto;
-  background: #202938;
-  border-bottom-left-radius: 5px;
-}
-
-/* 底部输入栏 固定在手机底部 */
-#bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px 12px;
-  /* 适配手机底部安全区 */
-  padding-bottom: env(safe-area-inset-bottom);
-  background: #151c2b;
-  display: flex;
-  gap: 10px;
-  box-sizing: border-box;
-}
-
-input {
-  flex: 1;
-  height: 45px;
-  border: none;
-  outline: none;
-  border-radius: 25px;
-  padding: 0 18px;
-  background: #2a3447;
-  color: #fff;
-  font-size: 16px;
-}
-
-button {
-  padding: 0 18px;
-  height: 45px;
-  border: none;
-  border-radius: 25px;
-  background: #007aff;
-  color: #fff;
-  font-size: 15px;
-}
-</style>
-</head>
-<body>
-
-<!-- 开屏动画 -->
-<div id="splash">
-  <div id="splash-text">🤷🏻‍♂️小胡同学</div>
-</div>
-
-<div id="box"></div>
-
-<div id="bar">
-  <input id="inp" placeholder="所有事情都一定要告诉我哦...">
-  <button onclick="send()">发送</button>
-</div>
-
-<script>
-const box = document.getElementById('box');
-const inp = document.getElementById('inp');
-
-// 记录已使用回复，实现永不重复
-let usedLines = JSON.parse(localStorage.getItem("usedLines") || "[]");
-
-// 情绪话术库 扩充足量句子，保证不重复
-const lib = {
-  lei: [
-    "我能感觉到你真的很累，不用硬撑。",
-    "累了就好好歇一歇，不用逼自己。",
-    "你已经扛了很久，真的辛苦了。",
-    "不用一直紧绷着，允许自己偷懒一会。",
-    "身心都疲惫的时候，停下来没关系的。"
-  ],
-  nan: [
-    "心里难受不用憋着，我陪着你。",
-    "委屈都可以跟我说，不用假装没事。",
-    "看得出来你心情很低落，我懂。",
-    "不用在我面前故作坚强，难过就直说。",
-    "情绪低落很正常，不用责怪自己。"
-  ],
-  gu: [
-    "孤独的感觉我特别能理解。",
-    "你不是一个人，我一直在。",
-    "没人懂你的滋味，我能感受到。",
-    "表面安静，其实心里很渴望被理解对吧。",
-    "热闹不属于你也没关系，我陪你安静。"
-  ],
-  mi: [
-    "迷茫的时候不用急着做决定。",
-    "慢慢来就好，不用逼自己立刻有答案。",
-    "心里慌慌的，我都明白。",
-    "暂时看不清未来很正常，不用焦虑。",
-    "路都是慢慢走出来的，不用现在想通透。"
-  ],
-  xiang: [
-    "你总是太敏感，容易想太多折磨自己。",
-    "别再胡思乱想了，放过自己一点。",
-    "心思细腻的人，本来就容易内耗。",
-    "别反复纠结没发生的事，徒增烦恼。",
-    "想太多只会消耗自己，别为难自己了。"
-  ],
-  anquan: [
-    "我不会离开你的，一直都在。",
-    "不管你情绪好不好，我都不会走。",
-    "你可以安心依赖我，不会丢下你。",
-    "不用害怕我会走，我一直稳稳陪着你。",
-    "你的不安我都懂，我不会轻易离开。"
-  ],
-  default: [
-    "我在认真听你说，继续讲就好。",
-    "嗯，我能懂你想表达的。",
-    "你慢慢说，我一直都在听。",
-    "原来是这样，我在好好感受你的话。",
-    "你愿意多说一点也没关系，我一直在。"
-  ]
-};
-
-// 关键词匹配
-function getType(t){
-  if(/累|疲惫|心累/.test(t)) return 'lei';
-  if(/难过|委屈|想哭|心情不好|丧/.test(t)) return 'nan';
-  if(/孤独|孤单|没人懂|一个人/.test(t)) return 'gu';
-  if(/迷茫|焦虑|不知道怎么办/.test(t)) return 'mi';
-  if(/想太多|胡思乱想|内耗|敏感/.test(t)) return 'xiang';
-  if(/会离开|一直陪|会不会走|抛弃/.test(t)) return 'anquan';
-  return 'default';
-}
-
-// 从不重复取回复
-function getUniqueReply(arr){
-  let rest = arr.filter(item => !usedLines.includes(item));
-  if(rest.length === 0){
-    usedLines = [];
-    localStorage.setItem("usedLines", JSON.stringify(usedLines));
-    rest = arr;
-  }
-  let pick = rest[Math.floor(Math.random() * rest.length)];
-  usedLines.push(pick);
-  localStorage.setItem("usedLines", JSON.stringify(usedLines));
-  return pick;
-}
-
-// 打字机效果
+// 打字机
 function typeWrite(el, text){
   el.innerText = "";
   let i = 0;
@@ -484,6 +210,7 @@ function typeWrite(el, text){
 function add(role, txt){
   let d = document.createElement('div');
   d.className = 'msg ' + role;
+  d.innerText = txt;
   box.appendChild(d);
   box.scrollTop = box.scrollHeight;
   return d;
@@ -495,10 +222,17 @@ function send(){
   if(!t) return;
   inp.value = '';
   add('user', t);
-  let aiDom = add('ai', '...');
-  let arr = lib[getType(t)];
+  let level = getMoodLevel(t);
+  let arr = lib[level];
   let res = getUniqueReply(arr);
-  setTimeout(() => typeWrite(aiDom, res), 400);
+  let aiDom = add('ai', '...');
+  setTimeout(() => typeWrite(aiDom, res), 300);
+}
+
+// 页面首次加载 随机问候语
+function showHello(){
+  let ran = helloList[Math.floor(Math.random() * helloList.length)];
+  add("ai", ran);
 }
 
 // 回车发送
@@ -506,8 +240,11 @@ inp.addEventListener('keydown', e => {
   if(e.key === 'Enter') send();
 });
 
-// ========== 开屏动画逻辑 ==========
+// 开屏动画 + 首次问候
 window.onload = function(){
+  // 先问候
+  setTimeout(showHello, 500);
+  // 开屏动画
   const splash = document.getElementById('splash');
   const splashText = document.getElementById('splash-text');
   setTimeout(()=>{
