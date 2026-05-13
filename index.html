@@ -6,35 +6,16 @@
 <title>🤷🏻‍♂️小胡GPT Pro</title>
 
 <style>
-/* ======================
-   🌌 科幻背景
-====================== */
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont;
-  overflow:hidden;
+  font-family:-apple-system;
+  background:#0b1220;
   color:white;
-  background: radial-gradient(circle at top,#0b1220,#05070f);
-}
-
-/* 动态光晕 */
-body::before{
-  content:"";
-  position:fixed;
-  inset:-50%;
-  background: radial-gradient(circle,#00d4ff22,#0000 60%),
-              radial-gradient(circle at 70% 30%,#7c3aed33,#0000 50%);
-  animation: floatGlow 8s infinite linear;
-  pointer-events:none;
-}
-
-@keyframes floatGlow{
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
+  overflow:hidden;
 }
 
 /* ======================
-   🚀 BOOT
+   🚀 BOOT（科幻开场）
 ====================== */
 #boot{
   position:fixed;
@@ -43,92 +24,71 @@ body::before{
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  backdrop-filter: blur(20px);
+  background: radial-gradient(circle at top,#0b1220,#05070f);
+  z-index:999;
+  transition:0.5s;
 }
 
-#bootTitle{
-  font-size:28px;
+#logo{
+  font-size:26px;
   letter-spacing:2px;
   background: linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation: pulse 2s infinite;
+  animation: glow 2s infinite;
 }
 
-@keyframes pulse{
+@keyframes glow{
   0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.08);opacity:0.8;}
+  50%{transform:scale(1.05);opacity:0.7;}
 }
 
 #bootText{
-  margin-top:10px;
-  font-size:14px;
-  opacity:0.8;
+  margin-top:12px;
+  font-size:13px;
+  opacity:0.75;
   text-align:center;
-  max-width:600px;
-}
-
-#enterBtn{
-  margin-top:20px;
-  padding:12px 20px;
-  border:none;
-  border-radius:16px;
-  background: linear-gradient(90deg,#00d4ff,#7c3aed);
-  color:white;
-  opacity:0;
-  transition:0.3s;
-  box-shadow:0 0 20px #00d4ff55;
+  max-width:320px;
 }
 
 /* ======================
    💬 CHAT
 ====================== */
 #box{
-  display:none;
   height:100vh;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
   padding:20px;
   padding-bottom:140px;
+  -webkit-overflow-scrolling:touch;
 }
 
-/* 气泡（玻璃感） */
 .msg{
   max-width:78%;
   margin:10px 0;
   padding:12px 14px;
-  border-radius:18px;
+  border-radius:16px;
   line-height:1.4;
-  backdrop-filter: blur(18px);
-  border:1px solid rgba(255,255,255,0.08);
-  animation: appear 0.25s ease;
+  word-break:break-word;
+  white-space:pre-wrap;
+  backdrop-filter: blur(12px);
+
+  opacity:0;
+  transform: translateY(8px);
+  animation: in 0.25s ease forwards;
 }
 
-@keyframes appear{
-  from{transform:translateY(10px);opacity:0;}
-  to{transform:translateY(0);opacity:1;}
+@keyframes in{
+  to{opacity:1;transform:translateY(0);}
 }
 
 .user{
   margin-left:auto;
-  background: linear-gradient(135deg,#007aff,#00d4ff33);
+  background:#007aff;
 }
 
 .ai{
   margin-right:auto;
-  background: rgba(255,255,255,0.06);
-}
-
-/* 🫧 果冻 */
-.jelly{
-  animation:jelly 0.4s cubic-bezier(.2,.9,.2,1);
-}
-
-@keyframes jelly{
-  0%{transform:scale(0.5);}
-  40%{transform:scale(1.12);}
-  70%{transform:scale(0.97);}
-  100%{transform:scale(1);}
+  background:rgba(255,255,255,0.08);
 }
 
 /* ======================
@@ -141,18 +101,16 @@ body::before{
   right:0;
   display:flex;
   padding:10px;
+  background:rgba(20,25,40,0.8);
   backdrop-filter: blur(20px);
-  background: rgba(10,15,25,0.6);
-  display:none;
 }
 
 input{
   flex:1;
   padding:12px;
+  border-radius:12px;
   border:none;
-  border-radius:14px;
   outline:none;
-  font-size:16px;
   background:rgba(255,255,255,0.08);
   color:white;
 }
@@ -161,26 +119,9 @@ button{
   margin-left:10px;
   padding:12px 16px;
   border:none;
-  border-radius:14px;
-  background: linear-gradient(135deg,#00d4ff,#7c3aed);
+  border-radius:12px;
+  background:#007aff;
   color:white;
-}
-
-/* 回到底部 */
-#toBottom{
-  position:fixed;
-  right:15px;
-  bottom:90px;
-  width:44px;
-  height:44px;
-  border-radius:50%;
-  background:rgba(0,212,255,0.25);
-  backdrop-filter: blur(10px);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  transition:0.2s;
 }
 </style>
 </head>
@@ -189,9 +130,8 @@ button{
 
 <!-- 🚀 BOOT -->
 <div id="boot">
-  <div id="bootTitle">🤷🏻‍♂️小胡GPT Pro</div>
+  <div id="logo">NEURAL AI 2.0</div>
   <div id="bootText"></div>
-  <button id="enterBtn" onclick="enter()">进入大模型</button>
 </div>
 
 <!-- CHAT -->
@@ -202,156 +142,179 @@ button{
   <button onclick="send()">发送</button>
 </div>
 
-<div id="toBottom" onclick="scrollToBottom()">↓</div>
-
 <script>
 
 /* ======================
-   ⚙️ API
+   🧠 MEMORY
 ====================== */
-const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
+let messages = JSON.parse(localStorage.getItem("mem") || "[]");
 
-const MODELS = [
-  "gpt-4o-mini",
-  "deepseek-chat",
-  "meta-llama-llama-3.1-8b-instruct"
-];
-
-let messages = [];
+const box = document.getElementById("box");
 
 /* ======================
-   🚀 BOOT动画
+   📱 iOS级滚动（修复版）
 ====================== */
-const bootText = "Initializing neural interface... syncing cloud... loading cognition layer... ready.";
+let autoScroll = true;
 
-let i=0;
-const bootEl=document.getElementById("bootText");
-const btn=document.getElementById("enterBtn");
-
-function boot(){
-  if(i<bootText.length){
-    const s=document.createElement("span");
-    s.innerText=bootText[i];
-    s.style.animation="appear 0.2s ease";
-    bootEl.appendChild(s);
-    i++;
-    requestAnimationFrame(()=>setTimeout(boot,20));
-  }else{
-    btn.style.opacity=1;
-  }
+function isBottom(){
+  return box.scrollHeight - box.scrollTop - box.clientHeight < 100;
 }
-boot();
-
-/* ======================
-   ENTER
-====================== */
-function enter(){
-  document.getElementById("boot").style.display="none";
-  document.getElementById("box").style.display="block";
-  document.getElementById("bar").style.display="flex";
-}
-
-/* ======================
-   SCROLL SYSTEM
-====================== */
-let autoScroll=true;
-const box=document.getElementById("box");
-const btnBottom=document.getElementById("toBottom");
 
 box.addEventListener("scroll",()=>{
-  const d=box.scrollHeight-box.scrollTop-box.clientHeight;
-  autoScroll=d<120;
-  btnBottom.style.opacity=d>150?1:0;
+  autoScroll = isBottom();
 });
 
-function smartScroll(){
-  if(!autoScroll)return;
-  requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
-}
+function scrollToBottom(force=false){
+  if(!autoScroll && !force) return;
 
-function scrollToBottom(){
-  autoScroll=true;
-  box.scrollTo({top:box.scrollHeight,behavior:"smooth"});
+  requestAnimationFrame(()=>{
+    box.scrollTop = box.scrollHeight;
+  });
 }
 
 /* ======================
-   UI
+   💬 UI
 ====================== */
 function add(role,text){
+
   const div=document.createElement("div");
-  div.className="msg "+role+" jelly";
+  div.className="msg "+role;
   div.innerText=text;
+
   box.appendChild(div);
-  smartScroll();
+
+  scrollToBottom(true);
+
   return div;
 }
 
 /* ======================
-   ✨ 逐字（科幻丝滑）
+   🧠 离线AI 2.0（带记忆）
+====================== */
+function offlineAI(input){
+
+  const last = messages.slice(-8).map(m=>m.content).join(" ");
+
+  if(input.includes("你好")) return "你好🙂 我是 NEURAL AI 2.0（离线模式），可以继续对话。";
+
+  if(input.includes("你是谁")) return "我是运行在浏览器中的离线智能AI，具备基础记忆能力。";
+
+  if(input.includes("怎么")){
+    return "我可以帮你拆解步骤，你具体想解决什么问题？";
+  }
+
+  if(input.includes("为什么")){
+    return "这个问题可以从原因和逻辑两方面分析，你想深入哪一部分？";
+  }
+
+  if(input.length < 3){
+    return "可以说得更具体一点，我需要更多信息🙂";
+  }
+
+  if(last.includes("代码")){
+    return "关于代码，我可以帮你优化结构或修复问题，你卡在哪一步？";
+  }
+
+  return `我理解你的意思是：「${input}」
+
+我可以帮你继续扩展这个思路，你可以说得更具体一点。`;
+}
+
+/* ======================
+   ✨ 逐字输出
 ====================== */
 function type(el,text){
-  if(!text){el.innerText="...";return;}
 
   el.innerHTML="";
   let i=0,out="";
 
-  function step(t){
+  function step(){
+
     if(i<text.length){
       out+=text[i];
-      el.innerHTML=out;
+      el.innerText=out;
       i++;
-      smartScroll();
+
+      scrollToBottom();
     }
+
     requestAnimationFrame(step);
   }
+
   requestAnimationFrame(step);
 }
 
 /* ======================
-   SEND
+   🚀 SEND
 ====================== */
-async function send(){
+function send(){
+
   const input=document.getElementById("input");
   const text=input.value.trim();
-  if(!text)return;
+  if(!text) return;
 
   input.value="";
 
   add("user",text);
+
   messages.push({role:"user",content:text});
 
-  const boxMsg=add("ai","...");
+  const aiBox=add("ai","...");
 
-  const reply=await askAI(text);
+  const reply=offlineAI(text);
 
   messages.push({role:"assistant",content:reply});
 
-  type(boxMsg,reply);
+  localStorage.setItem("mem",JSON.stringify(messages));
+
+  type(aiBox,reply);
 }
 
 /* ======================
-   AI
+   🚀 BOOT动画（已整合）
 ====================== */
-async function askAI(text){
+const bootLines=[
+  "Initializing neural core...",
+  "Loading memory system...",
+  "Activating offline intelligence...",
+  "Optimizing iOS interface...",
+  "Ready."
+];
 
-  for(let m of MODELS){
-    try{
-      const r=await fetch(API_URL,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:m,messages})
-      });
+const bootText=document.getElementById("bootText");
 
-      const d=await r.json();
-      const c=d?.choices?.[0]?.message?.content;
+let i=0;
 
-      if(c)return c;
+function boot(){
 
-    }catch(e){}
+  if(i<bootLines.length){
+
+    const div=document.createElement("div");
+    div.innerText=bootLines[i];
+    div.style.opacity=0;
+    div.style.transition="0.4s";
+
+    bootText.appendChild(div);
+
+    setTimeout(()=>div.style.opacity=1,50);
+
+    i++;
+    setTimeout(boot,600);
+
+  }else{
+
+    setTimeout(()=>{
+      document.getElementById("boot").style.opacity=0;
+
+      setTimeout(()=>{
+        document.getElementById("boot").style.display="none";
+      },500);
+
+    },800);
   }
-
-  return "SYSTEM OFFLINE • still able to process input.";
 }
+
+boot();
 
 </script>
 
