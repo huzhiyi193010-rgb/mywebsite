@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️ 小胡同学pro</title>
+<title>🤷🏻‍♂️ 小胡同学</title>
 
 <style>
 body{
@@ -15,7 +15,7 @@ body{
 }
 
 /* ======================
-   🚀 BOOT
+   🚀 BOOT（果冻升级）
 ====================== */
 #boot{
   position:fixed;
@@ -27,25 +27,25 @@ body{
   background:radial-gradient(circle at top,#1e293b,#0b1220);
 }
 
-/* 🫧 Logo果冻 */
+/* iOS级弹性 */
 @keyframes bootJelly {
-  0% { transform: scale(0.4); opacity:0; }
-  45% { transform: scale(1.15); opacity:1; }
-  65% { transform: scale(0.95); }
-  85% { transform: scale(1.03); }
+  0%   { transform: scale(0.35); opacity:0; }
+  45%  { transform: scale(1.15); opacity:1; }
+  65%  { transform: scale(0.95); }
+  85%  { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
 
 #bootTitle{
   font-size:26px;
   margin-bottom:10px;
-  animation:bootJelly 0.8s cubic-bezier(.2,.9,.2,1);
+  animation:bootJelly 0.85s cubic-bezier(.2,.9,.2,1);
 }
 
 #bootText{
   max-width:600px;
   text-align:center;
-  font-size:15px;
+  font-size:14px;
   min-height:40px;
   opacity:0.9;
 }
@@ -58,7 +58,7 @@ body{
   background:#007aff;
   color:white;
   opacity:0;
-  transition:0.4s;
+  transition:0.3s;
 }
 
 /* ======================
@@ -73,7 +73,7 @@ body{
   padding-bottom:140px;
 }
 
-/* 气泡 */
+/* 气泡（更柔） */
 .msg{
   max-width:78%;
   margin:10px 0;
@@ -82,7 +82,19 @@ body{
   line-height:1.4;
   white-space:pre-wrap;
   word-break:break-word;
-  backdrop-filter: blur(10px);
+
+  opacity:0;
+  transform: translateY(6px);
+  animation: msgIn 0.25s ease forwards;
+
+  will-change: transform, opacity;
+}
+
+@keyframes msgIn{
+  to{
+    opacity:1;
+    transform: translateY(0);
+  }
 }
 
 /* 用户 */
@@ -97,16 +109,16 @@ body{
   margin-right:auto;
 }
 
-/* 🫧 果冻气泡 */
+/* 🫧 果冻增强 */
 @keyframes jelly {
-  0% { transform: scale(0.5); opacity:0; }
-  40% { transform: scale(1.12); opacity:1; }
-  60% { transform: scale(0.96); }
+  0%   { transform: scale(0.55); opacity:0; }
+  40%  { transform: scale(1.12); opacity:1; }
+  60%  { transform: scale(0.97); }
   100% { transform: scale(1); }
 }
 
 .jelly{
-  animation:jelly 0.35s cubic-bezier(.2,.9,.2,1);
+  animation:jelly 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ======================
@@ -144,29 +156,48 @@ button{
   background:#007aff;
   color:white;
 }
+
+/* ======================
+   🔽 回到底部
+====================== */
+#toBottom{
+  position:fixed;
+  right:15px;
+  bottom:90px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:rgba(0,122,255,0.9);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-size:18px;
+  opacity:0;
+  transform:scale(0.8);
+  transition:0.2s;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ======================
-     🚀 BOOT SCREEN
-====================== -->
+<!-- 🚀 BOOT -->
 <div id="boot">
   <div id="bootTitle">🤷🏻‍♂️ 小胡同学pro</div>
   <div id="bootText"></div>
   <button id="enterBtn" onclick="enter()">Enter System</button>
 </div>
 
-<!-- ======================
-     💬 CHAT
-====================== -->
+<!-- 💬 CHAT -->
 <div id="box"></div>
 
 <div id="bar">
   <input id="input" placeholder="想问哥点啥..." />
   <button onclick="send()">发送</button>
 </div>
+
+<div id="toBottom" onclick="scrollToBottom()">↓</div>
 
 <script>
 
@@ -184,9 +215,9 @@ const MODELS = [
 let messages = [];
 
 /* ======================
-   🚀 BOOT动画（逐字+果冻）
+   🚀 BOOT
 ====================== */
-const bootText = "正在叫胡智奕起床...等会... system ready ✔";
+const bootText = "正在加载AI模型...请稍后...……加载完成 ✔";
 
 let i = 0;
 const bootEl = document.getElementById("bootText");
@@ -196,24 +227,20 @@ function boot(){
 
   if(i < bootText.length){
 
-    const span = document.createElement("span");
-
-    span.innerText = bootText[i];
-
-    span.style.display = "inline-block";
-    span.style.animation = "bootJelly 0.35s ease-out";
+    const span=document.createElement("span");
+    span.innerText=bootText[i];
+    span.style.display="inline-block";
+    span.style.animation="bootJelly 0.35s ease-out";
 
     bootEl.appendChild(span);
-
     i++;
 
-    setTimeout(boot, 35);
+    requestAnimationFrame(()=>setTimeout(boot,25));
 
   } else {
-    btn.style.opacity = 1;
+    btn.style.opacity=1;
   }
 }
-
 boot();
 
 /* ======================
@@ -226,22 +253,55 @@ function enter(){
 }
 
 /* ======================
+   📱 滚动系统（最终丝滑版）
+====================== */
+let autoScroll = true;
+const box = document.getElementById("box");
+const btnBottom = document.getElementById("toBottom");
+
+box.addEventListener("scroll", ()=>{
+
+  const d = box.scrollHeight - box.scrollTop - box.clientHeight;
+
+  autoScroll = d < 120;
+
+  btnBottom.style.opacity = d > 150 ? 1 : 0;
+  btnBottom.style.transform = d > 150 ? "scale(1)" : "scale(0.8)";
+});
+
+function smartScroll(){
+  if(!autoScroll) return;
+
+  requestAnimationFrame(()=>{
+    box.scrollTo({top:box.scrollHeight,behavior:"auto"});
+  });
+}
+
+function scrollToBottom(){
+  autoScroll = true;
+  requestAnimationFrame(()=>{
+    box.scrollTo({top:box.scrollHeight,behavior:"smooth"});
+  });
+}
+
+/* ======================
    💬 UI
 ====================== */
 function add(role,text){
+
   const div=document.createElement("div");
   div.className="msg "+role+" jelly";
   div.innerText=text;
 
-  const box=document.getElementById("box");
   box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
+
+  smartScroll();
 
   return div;
 }
 
 /* ======================
-   ✨ 逐字输出
+   ✨ 超丝滑逐字（核心升级）
 ====================== */
 function type(el,text){
 
@@ -254,17 +314,26 @@ function type(el,text){
 
   let i=0;
   let out="";
+  let last=0;
 
-  function run(){
-    if(i<text.length){
+  function step(t){
+
+    if(t-last > 14){
+      last=t;
+
       out += text[i];
       el.innerHTML = out;
       i++;
-      setTimeout(run, Math.random()*12+6);
+
+      smartScroll();
+    }
+
+    if(i < text.length){
+      requestAnimationFrame(step);
     }
   }
 
-  run();
+  requestAnimationFrame(step);
 }
 
 /* ======================
@@ -281,21 +350,22 @@ async function send(){
   add("user",text);
   messages.push({role:"user",content:text});
 
-  const box=add("ai","● ● ●");
+  const boxMsg=add("ai","● ● ●");
 
   const reply=await askAI(text);
 
   messages.push({role:"assistant",content:reply});
 
-  type(box,reply);
+  type(boxMsg,reply);
 }
 
 /* ======================
-   🧠 AI（稳定版）
+   🧠 AI
 ====================== */
 async function askAI(text){
 
   for(let m of MODELS){
+
     try{
       const res=await fetch(API_URL,{
         method:"POST",
@@ -310,7 +380,7 @@ async function askAI(text){
 
       const c=data?.choices?.[0]?.message?.content;
 
-      if(c && c.trim().length>0){
+      if(c && c.trim()){
         return c;
       }
 
@@ -321,15 +391,14 @@ async function askAI(text){
 }
 
 /* ======================
-   🔴 离线模式
+   🔴 离线兜底
 ====================== */
 function offline(text){
 
-  if(text.includes("你好")) return "胡智奕在睡觉我去叫他起床";
-  if(text.includes("你是谁")) return "我是小胡同学，胡智奕创造了我";
-  if(text.includes("怎么")) return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
-
-  return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅";
+  if(t.includes("你好")) return "胡智奕在睡觉我去叫他起床";
+  if(t.includes("你是谁")) return "我是小胡同学，胡智奕创造了我";
+  if(t.includes("怎么")) return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
+  if(t.includes("什么")) return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅";
 }
 
 </script>
