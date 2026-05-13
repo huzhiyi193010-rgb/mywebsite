@@ -1,562 +1,258 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小胡同学pro</title>
 
 <style>
-
-*{
+body {
   margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-body{
-  overflow:hidden;
   font-family:Arial;
-  background:#050816;
+  background:#0f172a;
   color:white;
+  overflow:hidden;
 }
 
-/* =========================
-   🌌 3D背景
-========================= */
-
-#bg{
+/* ===== 启动页 ===== */
+#boot {
   position:fixed;
   inset:0;
-  background:
-  radial-gradient(circle at top,#1e3a8a 0%,transparent 40%),
-  radial-gradient(circle at bottom,#7c3aed 0%,transparent 35%),
-  #050816;
-  overflow:hidden;
-}
-
-/* 浮动光球 */
-.orb{
-  position:absolute;
-  border-radius:50%;
-  filter:blur(40px);
-  animation:float 8s infinite ease-in-out;
-}
-
-.orb1{
-  width:300px;
-  height:300px;
-  background:#2563eb;
-  top:-100px;
-  left:-100px;
-}
-
-.orb2{
-  width:250px;
-  height:250px;
-  background:#9333ea;
-  bottom:-80px;
-  right:-80px;
-  animation-delay:2s;
-}
-
-@keyframes float{
-  0%{
-    transform:translateY(0px) translateX(0px);
-  }
-  50%{
-    transform:translateY(30px) translateX(20px);
-  }
-  100%{
-    transform:translateY(0px) translateX(0px);
-  }
-}
-
-/* =========================
-   🧊 主容器
-========================= */
-
-#app{
-  position:relative;
-  z-index:10;
-  width:100%;
-  height:100vh;
-  display:flex;
-  backdrop-filter:blur(10px);
-}
-
-/* =========================
-   📂 左侧3D栏
-========================= */
-
-#sidebar{
-  width:260px;
-  background:rgba(255,255,255,0.05);
-  border-right:1px solid rgba(255,255,255,0.1);
-  padding:20px;
-  backdrop-filter:blur(20px);
-  transform-style:preserve-3d;
-}
-
-.logo{
-  font-size:24px;
-  font-weight:bold;
-  margin-bottom:30px;
-  color:#60a5fa;
-  text-shadow:0 0 20px #60a5fa;
-}
-
-.menu-item{
-  padding:14px;
-  margin-bottom:12px;
-  border-radius:14px;
-  background:rgba(255,255,255,0.05);
-  cursor:pointer;
-  transition:0.3s;
-  transform-style:preserve-3d;
-}
-
-.menu-item:hover{
-  transform:
-  rotateX(10deg)
-  rotateY(-10deg)
-  translateZ(20px);
-  background:rgba(96,165,250,0.2);
-}
-
-/* =========================
-   💬 主聊天区
-========================= */
-
-#main{
-  flex:1;
   display:flex;
   flex-direction:column;
-  position:relative;
-}
-
-/* 顶栏 */
-
-header{
-  height:70px;
-  display:flex;
+  justify-content:center;
   align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  background:rgba(255,255,255,0.03);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  background:radial-gradient(circle at top,#1e293b,#0f172a);
 }
 
-.title{
-  font-size:22px;
-  font-weight:bold;
-  background:linear-gradient(to right,#60a5fa,#a855f7);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+#bootText {
+  max-width:600px;
+  text-align:center;
+  font-size:18px;
+  min-height:60px;
 }
 
-select{
-  background:#111827;
-  color:white;
+.cursor {
+  display:inline-block;
+  width:8px;
+  background:white;
+  animation:blink 0.8s infinite;
+}
+
+@keyframes blink {
+  50% {opacity:0;}
+}
+
+#enterBtn {
+  margin-top:20px;
+  padding:12px 18px;
   border:none;
-  padding:10px;
-  border-radius:10px;
+  border-radius:8px;
+  background:#2563eb;
+  color:white;
+  opacity:0;
+  transition:0.5s;
 }
 
-/* =========================
-   💬 消息区
-========================= */
+/* ===== 聊天页 ===== */
+#chat {
+  display:none;
+  height:100vh;
+  flex-direction:column;
+}
 
-#chatBox{
+#box {
   flex:1;
-  overflow-y:auto;
-  padding:30px;
-  perspective:1000px;
-}
-
-/* 气泡 */
-
-.msg{
-  max-width:70%;
-  padding:16px;
-  margin-bottom:18px;
-  border-radius:18px;
-  line-height:1.6;
-  white-space:pre-wrap;
-  word-break:break-word;
-  transform-style:preserve-3d;
-  animation:fadeIn 0.5s ease;
-}
-
-.user{
-  margin-left:auto;
-  background:
-  linear-gradient(135deg,#2563eb,#3b82f6);
-  box-shadow:
-  0 10px 30px rgba(37,99,235,0.3);
-}
-
-.ai{
-  background:
-  rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.08);
-  backdrop-filter:blur(20px);
-  box-shadow:
-  0 10px 30px rgba(0,0,0,0.3);
-}
-
-@keyframes fadeIn{
-  from{
-    opacity:0;
-    transform:
-    translateY(20px)
-    rotateX(-10deg);
-  }
-  to{
-    opacity:1;
-    transform:
-    translateY(0)
-    rotateX(0);
-  }
-}
-
-/* =========================
-   ✨ 输入栏
-========================= */
-
-.inputBar{
+  overflow:auto;
   padding:20px;
-  background:rgba(255,255,255,0.03);
-  backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,0.08);
-  display:flex;
-  gap:10px;
+  padding-bottom:100px;
 }
 
-#userInput{
-  flex:1;
-  border:none;
-  outline:none;
-  padding:16px;
-  border-radius:18px;
+.msg {
+  max-width:75%;
+  margin:10px 0;
+  padding:12px 16px;
+  border-radius:10px;
+  white-space:pre-wrap;
+}
+
+.user {
+  background:#2563eb;
+  margin-left:auto;
+}
+
+.ai {
   background:rgba(255,255,255,0.08);
-  color:white;
-  font-size:15px;
-  backdrop-filter:blur(10px);
 }
 
-button{
+#inputBox {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  display:flex;
+  padding:10px;
+  background:#111827;
+}
+
+input {
+  flex:1;
+  padding:12px;
   border:none;
-  padding:16px 22px;
-  border-radius:18px;
-  cursor:pointer;
-  background:
-  linear-gradient(135deg,#2563eb,#9333ea);
+  border-radius:8px;
+}
+
+button {
+  margin-left:10px;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#2563eb;
   color:white;
-  font-weight:bold;
-  transition:0.3s;
 }
 
-button:hover{
-  transform:
-  translateY(-3px)
-  scale(1.05);
-  box-shadow:
-  0 10px 30px rgba(147,51,234,0.5);
+/* 动画 */
+.fade {
+  animation:fade .2s ease-in;
 }
-
-/* =========================
-   📱 手机适配
-========================= */
-
-@media(max-width:768px){
-
-  #sidebar{
-    display:none;
-  }
-
-  .msg{
-    max-width:90%;
-  }
-
-  header{
-    height:60px;
-  }
-
-  .title{
-    font-size:18px;
-  }
-
+@keyframes fade {
+  from{opacity:0;transform:translateY(5px);}
+  to{opacity:1;}
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- 🌌 背景 -->
-<div id="bg">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
+<!-- ===== 启动页 ===== -->
+<div id="boot">
+  <h2>🤖 小胡同学pro</h2>
+  <div id="bootText"></div>
+  <span class="cursor"></span>
+  <button id="enterBtn" onclick="startChat()">进入系统</button>
 </div>
 
-<!-- 主体 -->
-<div id="app">
+<!-- ===== 聊天页 ===== -->
+<div id="chat">
+  <div id="box"></div>
 
-  <!-- 左栏 -->
-  <div id="sidebar">
-
-    <div class="logo">
-      AI 3D
-    </div>
-
-    <div class="menu-item">
-      💬 新聊天
-    </div>
-
-    <div class="menu-item">
-      ⚡ AI模型
-    </div>
-
-    <div class="menu-item">
-      🎨 主题
-    </div>
-
-    <div class="menu-item">
-      🧠 设置
-    </div>
-
+  <div id="inputBox">
+    <input id="input" placeholder="输入你的问题..." />
+    <button onclick="send()">发送</button>
   </div>
-
-  <!-- 主区域 -->
-  <div id="main">
-
-    <header>
-
-      <div class="title">
-        🤖小胡同学pro
-      </div>
-
-      <select id="modelSelect">
-        <option value="openrouter/free">
-          Free Model
-        </option>
-
-        <option value="meta-llama/llama-3.1-8b-instruct:free">
-          Llama 3
-        </option>
-      </select>
-
-    </header>
-
-    <!-- 聊天 -->
-    <div id="chatBox"></div>
-
-    <!-- 输入 -->
-    <div class="inputBar">
-
-      <input
-      id="userInput"
-      placeholder="有什么问题问你哥..."
-      />
-
-      <button onclick="sendMessage()">
-        发送
-      </button>
-
-    </div>
-
-  </div>
-
 </div>
 
 <script>
 
-/* =========================
-   🚀 API配置
-========================= */
+/* ===== 配置 ===== */
+const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
 
-const API_URL =
-"https://new-api-production-ef85.up.railway.app/v1/chat/completions";
-
-/* =========================
-   🧠 多轮记忆
-========================= */
+const MODELS = [
+  "gpt-4o-mini",
+  "deepseek-chat",
+  "meta-llama-llama-3.1-8b-instruct"
+];
 
 let messages = [];
 
-/* =========================
-   ✨ 发送消息
-========================= */
+/* ===== 启动动画 ===== */
+const bootText = "初始化AI系统...加载模型...连接服务器...完成 ✔";
+let i = 0;
+const bootEl = document.getElementById("bootText");
+const btn = document.getElementById("enterBtn");
 
-async function sendMessage(){
+function typeBoot(){
+  if(i < bootText.length){
+    bootEl.innerHTML += bootText[i++];
+    setTimeout(typeBoot,50);
+  } else {
+    btn.style.opacity = 1;
+  }
+}
 
-  const input =
-  document.getElementById("userInput");
+setTimeout(typeBoot,800);
 
-  const text =
-  input.value.trim();
+function startChat(){
+  document.getElementById("boot").style.display="none";
+  document.getElementById("chat").style.display="flex";
+}
 
+/* ===== UI ===== */
+function add(role,text){
+  const div=document.createElement("div");
+  div.className="msg "+role+" fade";
+  div.innerText=text;
+  document.getElementById("box").appendChild(div);
+  window.scrollTo(0,document.body.scrollHeight);
+  return div;
+}
+
+/* ===== 打字机 ===== */
+function type(el,text){
+  let i=0;
+  el.innerHTML="";
+  function run(){
+    if(i<text.length){
+      el.innerHTML+=text[i++];
+      setTimeout(run,15);
+    }
+  }
+  run();
+}
+
+/* ===== 发送 ===== */
+async function send(){
+
+  const input=document.getElementById("input");
+  const text=input.value.trim();
   if(!text) return;
 
-  addMessage("user",text);
+  input.value="";
 
-  input.value = "";
+  add("user",text);
+  messages.push({role:"user",content:text});
 
-  messages.push({
-    role:"user",
-    content:text
-  });
+  const box=add("ai","思考中...");
 
-  const aiBox =
-  addMessage("小胡思考中...");
+  const reply=await askAI(text);
 
-  try{
+  messages.push({role:"assistant",content:reply});
 
-    const response =
-    await fetch(API_URL,{
+  type(box,reply);
+}
 
-      method:"POST",
+/* ===== AI核心（自动降级） ===== */
+async function askAI(text){
 
-      headers:{
-        "Content-Type":"application/json"
-      },
+  for(let m of MODELS){
+    try{
+      const res=await fetch(API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:m,
+          messages:messages
+        })
+      });
 
-      body:JSON.stringify({
+      const data=await res.json();
+      const c=data.choices?.[0]?.message?.content;
+      if(c) return c;
 
-        model:
-        document.getElementById("modelSelect").value,
-
-        messages:messages
-
-      })
-
-    });
-
-    const data =
-    await response.json();
-
-    const reply =
-    data.choices?.[0]?.message?.content
-    || "这个问题可把小胡难到了...";
-
-    messages.push({
-      role:"assistant",
-      content:reply
-    });
-
-    typeWriter(aiBox,reply);
-
-  }catch(err){
-
-    aiBox.innerText =
-    "错误："+err.message;
-
+    }catch(e){}
   }
 
+  return offline(text);
 }
 
-/* =========================
-   💬 添加消息
-========================= */
+/* ===== 离线模式 ===== */
+function offline(text){
 
-function addMessage(role,text){
+  if(text.includes("你好")) return "你好🙂（离线模式）";
+  if(text.includes("你是谁")) return "我是离线AI助手";
+  if(text.includes("怎么")) return "建议拆分步骤思考🙂";
 
-  const div =
-  document.createElement("div");
-
-  div.className =
-  "msg "+role;
-
-  div.innerText =
-  text;
-
-  document
-  .getElementById("chatBox")
-  .appendChild(div);
-
-  scrollBottom();
-
-  return div;
-
+  return "当前离线模式，但我仍然可以简单回应你🙂";
 }
-
-/* =========================
-   ⌨️ 打字机效果
-========================= */
-
-function typeWriter(el,text){
-
-  let i = 0;
-
-  el.innerText = "";
-
-  const timer =
-  setInterval(()=>{
-
-    el.innerText += text[i];
-
-    i++;
-
-    scrollBottom();
-
-    if(i >= text.length){
-      clearInterval(timer);
-    }
-
-  },10);
-
-}
-
-/* =========================
-   📜 自动滚动
-========================= */
-
-function scrollBottom(){
-
-  const box =
-  document.getElementById("chatBox");
-
-  box.scrollTop =
-  box.scrollHeight;
-
-}
-
-/* =========================
-   ⌨️ 回车发送
-========================= */
-
-document
-.getElementById("userInput")
-.addEventListener("keydown",(e)=>{
-
-  if(e.key === "Enter"){
-    sendMessage();
-  }
-
-});
-
-/* =========================
-   🖱️ 3D鼠标互动
-========================= */
-
-document.addEventListener("mousemove",(e)=>{
-
-  const x =
-  (window.innerWidth / 2 - e.clientX) / 40;
-
-  const y =
-  (window.innerHeight / 2 - e.clientY) / 40;
-
-  document
-  .getElementById("sidebar")
-  .style.transform =
-  `
-  rotateY(${x}deg)
-  rotateX(${-y}deg)
-  `;
-
-});
 
 </script>
 
