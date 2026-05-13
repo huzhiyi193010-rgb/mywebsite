@@ -2,6 +2,260 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>🤷🏻‍♂️小胡GPT Pro</title>
+<style>
+html,body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b1220;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+/* 开屏动画 */
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0b1220;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.8s ease;
+}
+#splash-text {
+  font-size: 28px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+#splash.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 聊天区域 */
+#box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 85px;
+  overflow-y: auto;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* 消息气泡 */
+.msg {
+  max-width: 75%;
+  border-radius: 18px;
+  padding: 12px 15px;
+  margin: 8px 0;
+  line-height: 1.6;
+  font-size: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.user {
+  margin-left: auto;
+  background: #007aff;
+  border-bottom-right-radius: 5px;
+}
+.ai {
+  margin-right: auto;
+  background: #202938;
+  border-bottom-left-radius: 5px;
+}
+
+/* 底部输入栏 */
+#bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #151c2b;
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+input {
+  flex: 1;
+  height: 45px;
+  border: none;
+  outline: none;
+  border-radius: 25px;
+  padding: 0 18px;
+  background: #2a3447;
+  color: #fff;
+  font-size: 16px;
+}
+
+button {
+  padding: 0 18px;
+  height: 45px;
+  border: none;
+  border-radius: 25px;
+  background: #007aff;
+  color: #fff;
+  font-size: 15px;
+}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div id="splash-text">🤷🏻‍♂️小胡同学</div>
+</div>
+
+<div id="box"></div>
+
+<div id="bar">
+  <input id="inp" placeholder="不管什么事都要和我说哦...">
+  <button onclick="send()">告诉我</button>
+</div>
+
+<script>
+const box = document.getElementById('box');
+const inp = document.getElementById('inp');
+
+// 记录已用回复 永不重复
+let usedLines = JSON.parse(localStorage.getItem("usedLines") || "[]");
+
+// 心情等级关键词
+const keyWords = {
+  // 1级 轻度
+  level1: ["累","烦","无聊","没劲","心情不好","丧"],
+  // 2级 中度
+  level2: ["孤独","委屈","焦虑","压力","迷茫","内耗","想太多","孤单","自卑","压抑"],
+  // 3级 重度（回复最长 近百字）
+  level3: ["崩溃","绝望","撑不住","想死","不想活","抑郁","无助","熬不下去"]
+};
+
+// 精准语录库 等级越高句子越长
+const lib = {
+  // 短句 轻度
+  level1: [
+    "看得出来你心情有点闷闷的，不用勉强自己硬撑。",
+    "偶尔情绪低落很正常，允许自己放松一下就好。",
+    "不想勉强自己开心的话，安静歇一会也没关系。"
+  ],
+  // 中句 中度
+  level2: [
+    "我能感受到你心里的不安和委屈，敏感的人总是容易想太多，把所有情绪都藏在自己心里，真的辛苦你了。",
+    "孤独和迷茫缠在心里的滋味很难受，不用逼自己合群，也不用急着找答案，我会慢慢陪着你听你倾诉。",
+    "容易内耗、心思太重的人，总是习惯性为难自己，放过自己一点，你的感受本来就很值得被在意。"
+  ],
+  // 长句 重度 接近100字
+  level3: [
+    "我知道你现在已经快要撑不住了，心里积攒了太多委屈和疲惫，不用假装坚强，也不用逼着自己一定要好起来，你可以脆弱，可以停下来，我会一直安安静静陪着你，不会让你一个人扛所有难受。",
+    "走到现在你已经咬牙坚持很久了，哪怕感觉绝望、熬不下去也没关系，不用跟别人解释你的情绪，不用故作乐观，在我这里你可以完全做自己，所有崩溃我都愿意接纳和陪着你。"
+  ],
+  // 日常闲聊 精准接话 不答非所问
+  normal: [
+    "我在认真听你说的每一句话，你可以慢慢把心里想法都说出来。",
+    "嗯，我明白你想表达的感受，你继续说，我一直都在认真倾听。",
+    "原来是这样，能理解你此刻的心情，有什么都可以尽管跟我说。"
+  ]
+};
+
+// 判断心情等级
+function getMoodLevel(text){
+  let s = text.toLowerCase();
+  if(keyWords.level3.some(w=>s.includes(w))) return "level3";
+  if(keyWords.level2.some(w=>s.includes(w))) return "level2";
+  if(keyWords.level1.some(w=>s.includes(w))) return "level1";
+  return "normal";
+}
+
+// 从不重复选取回复
+function getUniqueReply(arr){
+  let rest = arr.filter(item => !usedLines.includes(item));
+  if(rest.length === 0){
+    usedLines = [];
+    localStorage.setItem("usedLines", JSON.stringify(usedLines));
+    rest = arr;
+  }
+  let pick = rest[Math.floor(Math.random() * rest.length)];
+  usedLines.push(pick);
+  localStorage.setItem("usedLines", JSON.stringify(usedLines));
+  return pick;
+}
+
+// 打字机效果
+function typeWrite(el, text){
+  el.innerText = "";
+  let i = 0;
+  function step(){
+    if(i < text.length){
+      el.innerText += text[i++];
+      box.scrollTop = box.scrollHeight;
+      setTimeout(step,15);
+    }
+  }
+  step();
+}
+
+// 添加消息 修复：自己发的消息正常显示
+function add(role, txt){
+  let d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerText = txt;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  return d;
+}
+
+// 发送
+function send(){
+  let t = inp.value.trim();
+  if(!t) return;
+  inp.value = '';
+  
+  // 修复：用户消息正常显示
+  add('user', t);
+
+  let level = getMoodLevel(t);
+  let arr = lib[level];
+  let res = getUniqueReply(arr);
+
+  let aiDom = add('ai', '...');
+  setTimeout(() => typeWrite(aiDom, res), 300);
+}
+
+// 回车发送
+inp.addEventListener('keydown', e => {
+  if(e.key === 'Enter') send();
+});
+
+// 开屏动画
+window.onload = function(){
+  const splash = document.getElementById('splash');
+  const splashText = document.getElementById('splash-text');
+  setTimeout(()=>{
+    splashText.style.opacity = "1";
+    splashText.style.transform = "translateY(0)";
+  }, 200);
+  setTimeout(()=>{
+    splash.classList.add('hide');
+  }, 2200);
+}
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
 <!-- 强制手机完美适配 -->
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
 <title>小胡GPT Pro</title>
