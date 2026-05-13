@@ -6,96 +6,75 @@
 <title>小胡同学pro</title>
 
 <style>
-/* ===== iOS基础 ===== */
-body {
+body{
   margin:0;
-  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
+  font-family:-apple-system,BlinkMacSystemFont;
   background:#0b1220;
   color:white;
   overflow:hidden;
 }
 
-/* ===== 启动页 ===== */
-#boot {
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  background:radial-gradient(circle at top,#1e293b,#0b1220);
-}
-
-#bootText {
-  max-width:600px;
-  text-align:center;
-  font-size:16px;
-  min-height:50px;
-  opacity:0.9;
-}
-
-#enterBtn {
-  margin-top:20px;
-  padding:12px 18px;
-  border:none;
-  border-radius:14px;
-  background:#007aff;
-  color:white;
-  opacity:0;
-}
-
-/* ===== Chat ===== */
-#chat {
-  display:none;
+/* ===== 聊天容器 ===== */
+#box{
   height:100vh;
-  flex-direction:column;
-}
-
-/* iOS滚动 */
-#box {
-  flex:1;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   padding:20px;
   padding-bottom:140px;
 }
 
-/* 气泡 */
-.msg {
+/* ===== 气泡 ===== */
+.msg{
   max-width:78%;
   margin:10px 0;
   padding:12px 14px;
   border-radius:18px;
-  font-size:15px;
   line-height:1.4;
   white-space:pre-wrap;
+  word-break:break-word;
   backdrop-filter: blur(10px);
+  transform-origin: bottom;
 }
 
-.user {
+/* 用户 */
+.user{
   background:#007aff;
   margin-left:auto;
 }
 
-.ai {
+/* AI */
+.ai{
   background:rgba(255,255,255,0.08);
   margin-right:auto;
 }
 
-/* 输入栏 iOS风 */
-#inputBar {
+/* ===== 🫧 高级果冻动画（优化版） ===== */
+@keyframes jelly {
+  0% { transform: scale(0.6); opacity:0; }
+  40% { transform: scale(1.12); opacity:1; }
+  60% { transform: scale(0.96); }
+  80% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.jelly{
+  animation:jelly 0.38s cubic-bezier(.2,.9,.2,1);
+}
+
+/* ===== 输入栏 ===== */
+#bar{
   position:fixed;
   bottom:0;
   left:0;
   right:0;
+  display:flex;
   padding:10px;
   padding-bottom:calc(10px + env(safe-area-inset-bottom));
-  display:flex;
-  background:rgba(20,25,40,0.8);
+  background:rgba(20,25,40,0.85);
   backdrop-filter: blur(20px);
 }
 
-input {
+input{
   flex:1;
   padding:12px;
   border:none;
@@ -106,7 +85,7 @@ input {
   color:white;
 }
 
-button {
+button{
   margin-left:10px;
   padding:12px 16px;
   border:none;
@@ -114,40 +93,23 @@ button {
   background:#007aff;
   color:white;
 }
-
-/* 动画 */
-.fade {
-  animation:fade .2s ease;
-}
-@keyframes fade {
-  from {opacity:0; transform:translateY(6px);}
-  to {opacity:1;}
-}
 </style>
 </head>
 
 <body>
 
-<!-- ===== Boot ===== -->
-<div id="boot">
-  <h2>🤷🏻‍♂️ 小胡同学pro</h2>
-  <div id="bootText"></div>
-  <button id="enterBtn" onclick="start()">Enter</button>
-</div>
+<div id="box"></div>
 
-<!-- ===== Chat ===== -->
-<div id="chat">
-  <div id="box"></div>
-
-  <div id="inputBar">
-    <input id="input" placeholder="Message..." />
-    <button onclick="send()">↑</button>
-  </div>
+<div id="bar">
+  <input id="input" placeholder="想问哥点啥..." />
+  <button onclick="send()">发送</button>
 </div>
 
 <script>
 
-/* ===== 配置 ===== */
+/* ======================
+   ⚙️ API配置
+====================== */
 const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
 
 const MODELS = [
@@ -158,52 +120,57 @@ const MODELS = [
 
 let messages = [];
 
-/* ===== Boot动画 ===== */
-const bootText = "Loading AI model... connecting server... ready ✔";
-let i=0;
-const bootEl=document.getElementById("bootText");
-const btn=document.getElementById("enterBtn");
-
-function boot(){
-  if(i<bootText.length){
-    bootEl.innerHTML+=bootText[i++];
-    requestAnimationFrame(()=>setTimeout(boot,40));
-  } else {
-    btn.style.opacity=1;
-  }
-}
-boot();
-
-function start(){
-  document.getElementById("boot").style.display="none";
-  document.getElementById("chat").style.display="flex";
-}
-
-/* ===== UI ===== */
+/* ======================
+   💬 UI（优化滚动）
+====================== */
 function add(role,text){
+
   const div=document.createElement("div");
-  div.className="msg "+role+" fade";
+  div.className="msg "+role+" jelly";
   div.innerText=text;
+
   const box=document.getElementById("box");
   box.appendChild(div);
-  box.scrollTop=box.scrollHeight;
+
+  requestAnimationFrame(()=>{
+    box.scrollTop = box.scrollHeight;
+  });
+
   return div;
 }
 
-/* iOS级丝滑打字 */
+/* ======================
+   ✨ 更自然逐字
+====================== */
 function type(el,text){
-  let i=0;
-  el.innerHTML="";
+
+  if(!text || text.length === 0){
+    el.innerText = "（无返回内容）";
+    return;
+  }
+
+  el.innerHTML = "";
+
+  let i = 0;
+  let out = "";
+
   function run(){
-    if(i<text.length){
-      el.innerHTML+=text[i++];
-      requestAnimationFrame(()=>setTimeout(run,12));
+    if(i < text.length){
+      out += text[i];
+      el.innerHTML = out;
+      i++;
+
+      const speed = Math.random()*12 + 6;
+      setTimeout(run, speed);
     }
   }
+
   run();
 }
 
-/* ===== 发送 ===== */
+/* ======================
+   🚀 发送
+====================== */
 async function send(){
 
   const input=document.getElementById("input");
@@ -215,20 +182,24 @@ async function send(){
   add("user",text);
   messages.push({role:"user",content:text});
 
-  const box=add("ai","...");
+  const box=add("ai","● ● ●");
 
-  const reply=await askAI();
+  const reply=await askAI(text);
 
   messages.push({role:"assistant",content:reply});
 
   type(box,reply);
 }
 
-/* ===== AI多模型 ===== */
-async function askAI(){
+/* ======================
+   🧠 AI核心（强化稳定版）
+====================== */
+async function askAI(text){
 
   for(let m of MODELS){
+
     try{
+
       const res=await fetch(API_URL,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -239,13 +210,34 @@ async function askAI(){
       });
 
       const data=await res.json();
-      const c=data.choices?.[0]?.message?.content;
-      if(c) return c;
 
-    }catch(e){}
+      const c=data?.choices?.[0]?.message?.content;
+
+      if(c && typeof c === "string" && c.trim().length>0){
+        return c;
+      }
+
+    }catch(e){
+      console.log("model fail:", m);
+    }
   }
 
-  return "（小胡睡着了）我仍然可以简单回应你🙂";
+  return offline(text);
+}
+
+/* ======================
+   🔴 离线兜底（增强版）
+====================== */
+function offline(text){
+
+  const t = text || "";
+
+  if(t.includes("你好")) return "胡智奕在睡觉我去叫他起床";
+  if(t.includes("你是谁")) return "我是小胡同学，胡智奕创造了我";
+  if(t.includes("怎么")) return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
+  if(t.includes("什么")) return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅";
+
+  return "当前AI不可用，但我仍然可以理解你的问题🙂";
 }
 
 </script>
