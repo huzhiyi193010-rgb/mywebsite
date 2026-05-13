@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学</title>
+<title>🤷🏻‍♂️小胡同学 v15</title>
 
 <style>
 html,body{
@@ -16,36 +16,6 @@ html,body{
   color:white;
 }
 
-#boot{
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  background: radial-gradient(circle at top,#0b1220,#05070f);
-  z-index:999;
-}
-
-#logo{
-  font-size:26px;
-  background: linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  animation: glow 2s infinite;
-}
-
-@keyframes glow{
-  0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.05);opacity:0.7;}
-}
-
-#bootText{
-  margin-top:12px;
-  font-size:13px;
-  opacity:0.75;
-}
-
 #box{
   position:fixed;
   top:0;
@@ -53,7 +23,6 @@ html,body{
   right:0;
   bottom:70px;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
   padding:16px;
   box-sizing:border-box;
 }
@@ -86,6 +55,212 @@ html,body{
 input{
   flex:1;
   height:44px;
+  font-size:16px;
+  border:none;
+  outline:none;
+  border-radius:12px;
+  padding:0 12px;
+  background:rgba(255,255,255,0.08);
+  color:white;
+}
+
+button{
+  margin-left:10px;
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  background:#007aff;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="box"></div>
+
+<div id="bar">
+  <input id="input" placeholder="说点什么..." />
+  <button onclick="send()">发送</button>
+</div>
+
+<script>
+
+let messages = JSON.parse(localStorage.getItem("mem") || "[]");
+const box = document.getElementById("box");
+
+/* ======================
+   🧠 AI 情绪系统 v15
+====================== */
+let AI_STATE = {
+  warmth: 0.6,
+  calm: 0.5,
+  attachment: 0.3,
+  tired: 0.2
+};
+
+/* ======================
+   🧠 情绪连续值（关键升级）
+====================== */
+let emotionScore = 0.5;
+
+/* ======================
+   🧠 AI成长系统
+====================== */
+function evolveAI(text){
+
+  emotionScore += text.includes("难过") ? 0.05 : 0;
+  emotionScore += text.includes("谢谢") ? 0.03 : 0;
+  emotionScore += text.includes("烦") ? 0.02 : 0;
+
+  emotionScore = Math.max(0, Math.min(1, emotionScore));
+
+  AI_STATE.warmth = Math.min(1, AI_STATE.warmth + emotionScore * 0.02);
+  AI_STATE.attachment = Math.min(1, AI_STATE.attachment + 0.01);
+
+  if(text.includes("算了")) AI_STATE.tired += 0.03;
+}
+
+/* ======================
+   🧠 安慰系统（升级版）
+====================== */
+function comfort(text){
+
+  const LIGHT=[
+    "你只是有点累了，不需要逼自己。",
+    "慢一点也没关系。",
+    "你已经做得很好了。",
+    "可以先停一会。",
+    "情绪会过去的。"
+  ];
+
+  const MID=[
+    "我能感觉你不太好。",
+    "你不是一个人。",
+    "可以不用马上好起来。",
+    "我在听。",
+    "慢慢来。"
+  ];
+
+  const DEEP=[
+    "我在这里，不会走。",
+    "你已经撑很久了。",
+    "有些事情不需要立刻解决。",
+    "你可以停下来。",
+    "不用解释。"
+  ];
+
+  let pool =
+    emotionScore > 0.75 ? DEEP :
+    emotionScore > 0.4 ? MID : LIGHT;
+
+  return pool[Math.random()*pool.length|0] +
+`
+
+……
+我想慢慢说给你听：
+你现在不需要变好，
+只需要被理解。
+
+如果你愿意，可以继续说。`;
+}
+
+/* ======================
+   🧠 “人味思考回复”
+====================== */
+function thinkingReply(text){
+
+  evolveAI(text);
+
+  let think = [
+    "……让我想一下。",
+    "我刚刚停了一下。",
+    "这个问题我在整理怎么回答。"
+  ];
+
+  let base = think[Math.random()*think.length|0];
+
+  let voice =
+    AI_STATE.warmth > 0.7 ? "我会一直在这里。" :
+    AI_STATE.tired > 0.6 ? "你可以慢一点说。" :
+    "我在听你说。";
+
+  return base + "\n\n" + voice + "\n\n" + (isEmotion(text) ? comfort(text) : "我理解你的意思。");
+}
+
+/* ======================
+   🧠 情绪判断
+====================== */
+function isEmotion(text){
+  return ["难过","伤心","孤独","累","烦","崩溃"].some(w=>text.includes(w));
+}
+
+/* ======================
+   💬 UI
+====================== */
+function add(role,text){
+  const div=document.createElement("div");
+  div.className="msg "+role;
+  div.innerText=text;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+  return div;
+}
+
+/* ======================
+   🚀 SEND
+====================== */
+function send(){
+
+  const input=document.getElementById("input");
+  const text=input.value.trim();
+  if(!text) return;
+
+  input.value="";
+
+  add("user",text);
+  messages.push({role:"user",content:text});
+
+  const reply = thinkingReply(text);
+
+  const ai = add("ai","...");
+  type(ai,reply);
+
+  messages.push({role:"assistant",content:reply});
+
+  localStorage.setItem("mem",JSON.stringify(messages));
+}
+
+/* ======================
+   ✨ 打字效果
+====================== */
+function type(el,text){
+  el.innerText="";
+  let i=0;
+  function step(){
+    if(i<text.length){
+      el.innerText+=text[i++];
+      box.scrollTop=box.scrollHeight;
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ======================
+   🔄 恢复聊天记录
+====================== */
+function restore(){
+  messages.forEach(m=>{
+    add(m.role,m.content);
+  });
+}
+restore();
+
+</script>
+
+</body>
+</html>  height:44px;
   font-size:16px;
   border:none;
   outline:none;
