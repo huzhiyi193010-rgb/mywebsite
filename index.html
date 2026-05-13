@@ -1,26 +1,97 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- 强制手机完美适配 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>情感陪伴</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:#0b1220;color:#fff;font-size:16px;}
-#box{padding:15px;padding-bottom:80px;}
-.msg{border-radius:15px;padding:12px;margin:10px 0;max-width:80%;line-height:1.6;}
-.user{background:#007aff;margin-left:auto;}
-.ai{background:#222;margin-right:auto;}
-#bar{position:fixed;bottom:0;left:0;right:0;padding:10px;background:#111;display:flex;gap:8px;}
-input{flex:1;padding:10px;border-radius:10px;border:0;outline:0;background:#333;color:#fff;}
-button{padding:10px 15px;border-radius:10px;border:0;background:#007aff;color:#fff;}
+html,body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b1220;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+/* 聊天区域 适配不被输入框挡住 */
+#box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 85px;
+  overflow-y: auto;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* 消息气泡 */
+.msg {
+  max-width: 75%;
+  border-radius: 18px;
+  padding: 12px 15px;
+  margin: 8px 0;
+  line-height: 1.6;
+  font-size: 16px;
+}
+.user {
+  margin-left: auto;
+  background: #007aff;
+  border-bottom-right-radius: 5px;
+}
+.ai {
+  margin-right: auto;
+  background: #202938;
+  border-bottom-left-radius: 5px;
+}
+
+/* 底部输入栏 固定在手机底部 */
+#bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  /* 适配手机底部安全区 */
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #151c2b;
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+input {
+  flex: 1;
+  height: 45px;
+  border: none;
+  outline: none;
+  border-radius: 25px;
+  padding: 0 18px;
+  background: #2a3447;
+  color: #fff;
+  font-size: 16px;
+}
+
+button {
+  padding: 0 18px;
+  height: 45px;
+  border: none;
+  border-radius: 25px;
+  background: #007aff;
+  color: #fff;
+  font-size: 15px;
+}
 </style>
 </head>
 <body>
 
 <div id="box"></div>
+
 <div id="bar">
-  <input id="inp" placeholder="说点什么...">
+  <input id="inp" placeholder="随便说说心事...">
   <button onclick="send()">发送</button>
 </div>
 
@@ -28,51 +99,80 @@ button{padding:10px 15px;border-radius:10px;border:0;background:#007aff;color:#f
 const box = document.getElementById('box');
 const inp = document.getElementById('inp');
 
-// 情感语录库
+// 情绪话术库 精准对应 不答非所问
 const lib = {
-  lei:["我懂你的疲惫，不用硬撑着。","累了就停下来歇会儿，没关系的。","你已经够辛苦了，别再为难自己。"],
-  nan:["心里难受就不用忍着，我在听。","委屈都可以跟我说，不用假装坚强。","能感觉到你现在心情很低落。"],
-  gu:["一个人心里空空的滋味真的不好受。","我陪着你，不会让你一直孤单。","懂你那种没人理解的孤独感。"],
-  mi:["迷茫的时候不用急着找答案。","慢慢来，路会一点点清晰的。","不用慌，很多事都可以慢慢熬过去。"],
-  xiang:["你总是想太多，把自己困住了。","别胡思乱想了，放过自己一点。","心思太敏感的人最容易内耗。"],
-  anquan:["我不会离开你的，放心就好。","不管怎样我都会一直在。","你不用害怕被丢下，我一直在。"],
-  default:["嗯，我在认真听你说。","我懂你的意思。","你继续说，我听着呢。"]
+  lei: [
+    "我能感觉到你真的很累，不用硬撑。",
+    "累了就好好歇一歇，不用逼自己。",
+    "你已经扛了很久，真的辛苦了。"
+  ],
+  nan: [
+    "心里难受不用憋着，我陪着你。",
+    "委屈都可以跟我说，不用假装没事。",
+    "看得出来你心情很低落，我懂。"
+  ],
+  gu: [
+    "孤独的感觉我特别能理解。",
+    "你不是一个人，我一直在。",
+    "没人懂你的滋味，我能感受到。"
+  ],
+  mi: [
+    "迷茫的时候不用急着做决定。",
+    "慢慢来就好，不用逼自己立刻有答案。",
+    "心里慌慌的，我都明白。"
+  ],
+  xiang: [
+    "你总是太敏感，容易想太多折磨自己。",
+    "别再胡思乱想了，放过自己一点。",
+    "心思细腻的人，本来就容易内耗。"
+  ],
+  anquan: [
+    "我不会离开你的，一直都在。",
+    "不管你情绪好不好，我都不会走。",
+    "你可以安心依赖我，不会丢下你。"
+  ],
+  default: [
+    "我在认真听你说，继续讲就好。",
+    "嗯，我能懂你想表达的。",
+    "你慢慢说，我一直都在听。"
+  ]
 };
 
-// 匹配情绪
+// 关键词匹配
 function getType(t){
   if(/累|疲惫|心累/.test(t)) return 'lei';
-  if(/难过|委屈|想哭|心情不好/.test(t)) return 'nan';
-  if(/孤独|孤单|一个人|没人懂/.test(t)) return 'gu';
+  if(/难过|委屈|想哭|心情不好|丧/.test(t)) return 'nan';
+  if(/孤独|孤单|没人懂|一个人/.test(t)) return 'gu';
   if(/迷茫|焦虑|不知道怎么办/.test(t)) return 'mi';
-  if(/想太多|胡思乱想|内耗/.test(t)) return 'xiang';
-  if(/会离开|一直陪|会不会走/.test(t)) return 'anquan';
+  if(/想太多|胡思乱想|内耗|敏感/.test(t)) return 'xiang';
+  if(/会离开|一直陪|会不会走|抛弃/.test(t)) return 'anquan';
   return 'default';
 }
 
 // 添加消息
-function add(role,txt){
+function add(role, txt){
   let d = document.createElement('div');
-  d.className = 'msg '+role;
+  d.className = 'msg ' + role;
   d.innerText = txt;
   box.appendChild(d);
   box.scrollTop = box.scrollHeight;
 }
 
-// 发送
+// 发送消息
 function send(){
   let t = inp.value.trim();
-  if(!t)return;
+  if(!t) return;
   inp.value = '';
-  add('user',t);
-  // 随机不重复回复
+  add('user', t);
   let arr = lib[getType(t)];
-  let res = arr[Math.floor(Math.random()*arr.length)];
-  setTimeout(()=>add('ai',res),300);
+  let res = arr[Math.floor(Math.random() * arr.length)];
+  setTimeout(() => add('ai', res), 400);
 }
 
 // 回车发送
-inp.onkeydown = e=>e.key==='Enter'&&send();
+inp.addEventListener('keydown', e => {
+  if(e.key === 'Enter') send();
+});
 </script>
 
 </body>
