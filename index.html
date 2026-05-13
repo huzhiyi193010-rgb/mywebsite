@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学 </title>
+<title>🤷🏻‍♂️小胡同学 v15</title>
 
 <style>
 html,body{
   margin:0;
+  padding:0;
   height:100%;
   overflow:hidden;
   font-family:-apple-system;
@@ -15,13 +16,16 @@ html,body{
   color:white;
 }
 
+/* ===== BOOT ===== */
 #boot{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
   background:radial-gradient(circle,#0b1220,#05070f);
+  z-index:999;
 }
 
 #logo{
@@ -31,10 +35,17 @@ html,body{
   -webkit-text-fill-color:transparent;
 }
 
+/* ===== CHAT BOX（修复关键） ===== */
 #box{
-  position:fixed;top:0;bottom:70px;left:0;right:0;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:70px; /* 保证输入框不遮挡 */
   overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   padding:16px;
+  box-sizing:border-box;
 }
 
 .msg{
@@ -43,48 +54,79 @@ html,body{
   padding:12px;
   border-radius:14px;
   white-space:pre-wrap;
+  word-break:break-word;
 }
 
 .user{margin-left:auto;background:#0a84ff;}
 .ai{margin-right:auto;background:rgba(255,255,255,0.08);}
 
+/* ===== INPUT BAR（修复关键） ===== */
 #bar{
-  position:fixed;bottom:0;left:0;right:0;
-  height:70px;display:flex;
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  display:flex;
+  align-items:center;
   padding:10px;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
   background:rgba(20,25,40,0.85);
+  backdrop-filter: blur(20px);
+  box-sizing:border-box;
 }
 
-input{flex:1;border:none;border-radius:12px;padding:0 10px;}
-button{margin-left:10px;}
+input{
+  flex:1;
+  height:44px;
+  font-size:16px;
+  border:none;
+  outline:none;
+  border-radius:12px;
+  padding:0 12px;
+  background:rgba(255,255,255,0.08);
+  color:white;
+}
+
+button{
+  margin-left:10px;
+  padding:10px 14px;
+  border:none;
+  border-radius:12px;
+  background:#007aff;
+  color:white;
+}
 </style>
 </head>
 
 <body>
 
+<!-- BOOT -->
 <div id="boot">
-  <div id="logo">🤷🏻‍♂️小胡同学</div>
+  <div id="logo">🤷🏻‍♂️小胡同学 v15</div>
   <div id="bootText"></div>
 </div>
 
+<!-- CHAT -->
 <div id="box"></div>
 
+<!-- INPUT -->
 <div id="bar">
-  <input id="input" placeholder="不管发生什么事情都要告诉我哦..." />
-  <button onclick="send()">发送</button>
+  <input id="input" placeholder="小脑袋想什么呢..." />
+  <button onclick="send()">告诉我</button>
 </div>
 
 <script>
 
 /* ======================
-   🧠 MEMORY
+   🧠 记忆系统（修复）
 ====================== */
-let mem = JSON.parse(localStorage.getItem("mem")||"[]");
+let mem = JSON.parse(localStorage.getItem("mem") || "[]");
 
 /* ======================
-   💓 LIFE STATE
+   💓 情绪 & 依赖
 ====================== */
-let LIFE = JSON.parse(localStorage.getItem("life")||`{
+let LIFE = JSON.parse(localStorage.getItem("life") || `{
   emotion:0.5,
   dependence:0.2
 }`);
@@ -95,75 +137,40 @@ let LIFE = JSON.parse(localStorage.getItem("life")||`{
 function emo(t){
   if(/崩溃|绝望|想死|撑不住/.test(t)) return "deep";
   if(/难过|伤心|孤独|失落|痛苦/.test(t)) return "mid";
-  if(/焦虑|压力|烦|累|不开心/.test(t)) return "low";
-  if(/有点|还好/.test(t)) return "soft";
+  if(/烦|累|压力/.test(t)) return "low";
   return "normal";
 }
 
 /* ======================
-   💌 安慰系统 v15（增强版）
+   💌 安慰系统（保留增强版）
 ====================== */
 const COMFORT = {
 
 deep:[
-`我知道你现在已经不是“难过”这么简单了，而是那种撑很久之后的崩塌感。
-你不用再装没事了，在我这里你可以直接放下。`,
-
-`如果你现在什么都不想说也没关系，我不会离开。
-你不用解释，你的沉默我也能理解。`,
-
-`你已经很努力了，真的，不是所有坚持都有结果，但你已经很了不起了。`
+"我知道你现在不是简单难过，而是很重的情绪。",
+"你可以不用撑，我在这里。",
+"你不用解释，我都在。"
 ],
 
 mid:[
-`你现在的情绪不是小问题，它是你一直压着的结果。`,
-
-`不用急着好起来，我们可以慢慢来。`,
-
-`你不是一个人在扛，我在。`
+"我能感觉到你现在不太好。",
+"你不用一个人扛。",
+"慢慢来没关系。"
 ],
 
 low:[
-`你只是有点累，不是你不行。`,
-
-`停一停没关系，世界不会因为你慢一点就崩塌。`,
-
-`你已经做得很好了。`
-],
-
-soft:[
-`我感觉你今天有点不太一样，是不是有点累？`,
-
-`可以不用那么紧绷。`,
-
-`我在听你说。`
+"你只是累了。",
+"可以停一下。",
+"你已经做得很好了。"
 ],
 
 normal:[
-`嗯，我在。`,
-
-`继续说吧。`,
-
-`我听着呢。`
+"我在。",
+"继续说吧。",
+"嗯，我听着。"
 ]
 
 };
-
-/* ======================
-   🎲 随机安慰信
-====================== */
-function getComfort(level){
-
-  let arr = COMFORT[level] || COMFORT.normal;
-
-  let base = arr[Math.floor(Math.random()*arr.length)];
-
-  let tail =
-`\n\n—— 我想再补一句 —
-你不用一个人扛，我会在这里。`;
-
-  return base + tail;
-}
 
 /* ======================
    💓 回复
@@ -172,16 +179,18 @@ function reply(t){
 
   let level = emo(t);
 
-  LIFE.emotion += 0.04;
-  LIFE.dependence += 0.03;
+  LIFE.emotion += 0.03;
+  LIFE.dependence += 0.02;
 
   let head =
     level==="deep"?"我在这里，不会让你一个人。":
-    level==="mid"?"我能感觉到你很难受。":
-    level==="low"?"我在听你说。":
-    "嗯，我在。";
+    level==="mid"?"我能感觉到你不太好。":
+    "我在听你说。";
 
-  return head + "\n\n" + getComfort(level);
+  let list = COMFORT[level] || COMFORT.normal;
+  let body = list[Math.floor(Math.random()*list.length)];
+
+  return head + "\n\n" + body;
 }
 
 /* ======================
@@ -189,29 +198,13 @@ function reply(t){
 ====================== */
 const box=document.getElementById("box");
 
-function add(r,t){
+function add(role,text){
   let d=document.createElement("div");
-  d.className="msg "+r;
-  d.innerText=t;
+  d.className="msg "+role;
+  d.innerText=text;
   box.appendChild(d);
   box.scrollTop=box.scrollHeight;
   return d;
-}
-
-/* ======================
-   ✍️ 打字
-====================== */
-function type(el,t){
-  el.innerText="";
-  let i=0;
-  function run(){
-    if(i<t.length){
-      el.innerText+=t[i++];
-      box.scrollTop=box.scrollHeight;
-      requestAnimationFrame(run);
-    }
-  }
-  requestAnimationFrame(run);
 }
 
 /* ======================
@@ -231,19 +224,12 @@ function send(){
   let r = reply(t);
 
   let ai = add("ai","...");
-  setTimeout(()=>type(ai,r),300);
+  setTimeout(()=>ai.innerText=r,300);
 
   mem.push({role:"ai",t:r});
 
   localStorage.setItem("mem",JSON.stringify(mem));
 }
-
-/* ======================
-   🌙 BOOT
-====================== */
-setTimeout(()=>{
-  document.getElementById("boot").style.display="none";
-},1200);
 
 </script>
 
