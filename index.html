@@ -1,261 +1,562 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>小胡GPT pro</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>小胡同学pro</title>
 
 <style>
-* {
-  box-sizing: border-box;
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
 }
 
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0a0f1c;
-  color: white;
-  display: flex;
-  height: 100vh;
+body{
+  overflow:hidden;
+  font-family:Arial;
+  background:#050816;
+  color:white;
 }
 
-/* 左侧历史 */
-#sidebar {
-  width: 260px;
-  background: #111827;
-  padding: 10px;
-  overflow-y: auto;
+/* =========================
+   🌌 3D背景
+========================= */
+
+#bg{
+  position:fixed;
+  inset:0;
+  background:
+  radial-gradient(circle at top,#1e3a8a 0%,transparent 40%),
+  radial-gradient(circle at bottom,#7c3aed 0%,transparent 35%),
+  #050816;
+  overflow:hidden;
 }
 
-.history-item {
-  padding: 10px;
-  margin: 6px 0;
-  background: #1f2937;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
+/* 浮动光球 */
+.orb{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(40px);
+  animation:float 8s infinite ease-in-out;
 }
 
-/* 主区域 */
-#main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+.orb1{
+  width:300px;
+  height:300px;
+  background:#2563eb;
+  top:-100px;
+  left:-100px;
 }
 
-header {
-  padding: 10px;
-  background: #111827;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
+.orb2{
+  width:250px;
+  height:250px;
+  background:#9333ea;
+  bottom:-80px;
+  right:-80px;
+  animation-delay:2s;
 }
 
-#chatBox {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-}
-
-.msg {
-  max-width: 75%;
-  padding: 10px;
-  margin: 8px;
-  border-radius: 10px;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.user {
-  background: #2563eb;
-  margin-left: auto;
-}
-
-.ai {
-  background: #374151;
-  margin-right: auto;
-}
-
-/* 有什么问题告诉哥 */
-.inputBar {
-  display: flex;
-  padding: 10px;
-  background: #111827;
-  gap: 8px;
-}
-
-input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  outline: none;
-}
-
-button {
-  padding: 10px 14px;
-  background: #22c55e;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #16a34a;
-}
-
-/* 📱 手机适配 */
-@media (max-width: 768px) {
-
-  body {
-    flex-direction: column;
+@keyframes float{
+  0%{
+    transform:translateY(0px) translateX(0px);
   }
-
-  #sidebar {
-    width: 100%;
-    height: 55px;
-    display: flex;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding: 5px;
+  50%{
+    transform:translateY(30px) translateX(20px);
   }
-
-  .history-item {
-    display: inline-block;
-    margin-right: 8px;
-    font-size: 12px;
-    padding: 6px 10px;
-  }
-
-  header {
-    font-size: 13px;
-  }
-
-  .msg {
-    max-width: 90%;
-    font-size: 14px;
-  }
-
-  input {
-    font-size: 14px;
-  }
-
-  button {
-    padding: 10px;
+  100%{
+    transform:translateY(0px) translateX(0px);
   }
 }
+
+/* =========================
+   🧊 主容器
+========================= */
+
+#app{
+  position:relative;
+  z-index:10;
+  width:100%;
+  height:100vh;
+  display:flex;
+  backdrop-filter:blur(10px);
+}
+
+/* =========================
+   📂 左侧3D栏
+========================= */
+
+#sidebar{
+  width:260px;
+  background:rgba(255,255,255,0.05);
+  border-right:1px solid rgba(255,255,255,0.1);
+  padding:20px;
+  backdrop-filter:blur(20px);
+  transform-style:preserve-3d;
+}
+
+.logo{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:30px;
+  color:#60a5fa;
+  text-shadow:0 0 20px #60a5fa;
+}
+
+.menu-item{
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.05);
+  cursor:pointer;
+  transition:0.3s;
+  transform-style:preserve-3d;
+}
+
+.menu-item:hover{
+  transform:
+  rotateX(10deg)
+  rotateY(-10deg)
+  translateZ(20px);
+  background:rgba(96,165,250,0.2);
+}
+
+/* =========================
+   💬 主聊天区
+========================= */
+
+#main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* 顶栏 */
+
+header{
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.title{
+  font-size:22px;
+  font-weight:bold;
+  background:linear-gradient(to right,#60a5fa,#a855f7);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+select{
+  background:#111827;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+}
+
+/* =========================
+   💬 消息区
+========================= */
+
+#chatBox{
+  flex:1;
+  overflow-y:auto;
+  padding:30px;
+  perspective:1000px;
+}
+
+/* 气泡 */
+
+.msg{
+  max-width:70%;
+  padding:16px;
+  margin-bottom:18px;
+  border-radius:18px;
+  line-height:1.6;
+  white-space:pre-wrap;
+  word-break:break-word;
+  transform-style:preserve-3d;
+  animation:fadeIn 0.5s ease;
+}
+
+.user{
+  margin-left:auto;
+  background:
+  linear-gradient(135deg,#2563eb,#3b82f6);
+  box-shadow:
+  0 10px 30px rgba(37,99,235,0.3);
+}
+
+.ai{
+  background:
+  rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  box-shadow:
+  0 10px 30px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:
+    translateY(20px)
+    rotateX(-10deg);
+  }
+  to{
+    opacity:1;
+    transform:
+    translateY(0)
+    rotateX(0);
+  }
+}
+
+/* =========================
+   ✨ 输入栏
+========================= */
+
+.inputBar{
+  padding:20px;
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;
+  gap:10px;
+}
+
+#userInput{
+  flex:1;
+  border:none;
+  outline:none;
+  padding:16px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.08);
+  color:white;
+  font-size:15px;
+  backdrop-filter:blur(10px);
+}
+
+button{
+  border:none;
+  padding:16px 22px;
+  border-radius:18px;
+  cursor:pointer;
+  background:
+  linear-gradient(135deg,#2563eb,#9333ea);
+  color:white;
+  font-weight:bold;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:
+  translateY(-3px)
+  scale(1.05);
+  box-shadow:
+  0 10px 30px rgba(147,51,234,0.5);
+}
+
+/* =========================
+   📱 手机适配
+========================= */
+
+@media(max-width:768px){
+
+  #sidebar{
+    display:none;
+  }
+
+  .msg{
+    max-width:90%;
+  }
+
+  header{
+    height:60px;
+  }
+
+  .title{
+    font-size:18px;
+  }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- 左侧历史 -->
-<div id="sidebar">
-  <div class="history-item">💬 新对话</div>
+<!-- 🌌 背景 -->
+<div id="bg">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
 </div>
 
-<!-- 主区域 -->
-<div id="main">
+<!-- 主体 -->
+<div id="app">
 
-<header>
-  <span>🤖小胡GPT pro</span>
-  <select id="modelSelect">
-    <option value="openrouter/free">Free Model</option>
-    <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3</option>
-  </select>
-</header>
+  <!-- 左栏 -->
+  <div id="sidebar">
 
-<div id="chatBox"></div>
+    <div class="logo">
+      AI 3D
+    </div>
 
-<div class="inputBar">
-  <input id="userInput" placeholder="输入消息..." />
-  <button onclick="sendMessage()">发送</button>
-</div>
+    <div class="menu-item">
+      💬 新聊天
+    </div>
+
+    <div class="menu-item">
+      ⚡ AI模型
+    </div>
+
+    <div class="menu-item">
+      🎨 主题
+    </div>
+
+    <div class="menu-item">
+      🧠 设置
+    </div>
+
+  </div>
+
+  <!-- 主区域 -->
+  <div id="main">
+
+    <header>
+
+      <div class="title">
+        🤖 3D AI Assistant
+      </div>
+
+      <select id="modelSelect">
+        <option value="openrouter/free">
+          Free Model
+        </option>
+
+        <option value="meta-llama/llama-3.1-8b-instruct:free">
+          Llama 3
+        </option>
+      </select>
+
+    </header>
+
+    <!-- 聊天 -->
+    <div id="chatBox"></div>
+
+    <!-- 输入 -->
+    <div class="inputBar">
+
+      <input
+      id="userInput"
+      placeholder="输入你的问题..."
+      />
+
+      <button onclick="sendMessage()">
+        发送
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
 
 <script>
 
-// ======================
-// 🔥 改这里：你的New API
-// ======================
-const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
+/* =========================
+   🚀 API配置
+========================= */
 
-// 🧠 对话记忆
+const API_URL =
+"https://new-api-production-ef85.up.railway.app/v1/chat/completions";
+
+/* =========================
+   🧠 多轮记忆
+========================= */
+
 let messages = [];
+
+/* =========================
+   ✨ 发送消息
+========================= */
 
 async function sendMessage(){
 
-  const input = document.getElementById("userInput");
-  const text = input.value.trim();
+  const input =
+  document.getElementById("userInput");
+
+  const text =
+  input.value.trim();
+
   if(!text) return;
 
-  const model = document.getElementById("modelSelect").value;
+  addMessage("user",text);
 
-  addMsg("user", text);
   input.value = "";
 
-  messages.push({ role: "user", content: text });
+  messages.push({
+    role:"user",
+    content:text
+  });
 
-  const aiBox = addMsg("ai", "AI思考中...");
+  const aiBox =
+  addMessage("ai","AI思考中...");
 
-  try {
+  try{
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const response =
+    await fetch(API_URL,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
       },
-      body: JSON.stringify({
-        model: model,
-        messages: messages
+
+      body:JSON.stringify({
+
+        model:
+        document.getElementById("modelSelect").value,
+
+        messages:messages
+
       })
+
     });
 
-    const data = await res.json();
+    const data =
+    await response.json();
 
-    let reply = data.choices?.[0]?.message?.content || "无返回内容";
+    const reply =
+    data.choices?.[0]?.message?.content
+    || "没有回复";
 
-    messages.push({ role: "assistant", content: reply });
+    messages.push({
+      role:"assistant",
+      content:reply
+    });
 
-    typeWriter(aiBox, reply);
+    typeWriter(aiBox,reply);
 
-  } catch (err) {
-    aiBox.innerText = "错误：" + err.message;
+  }catch(err){
+
+    aiBox.innerText =
+    "错误："+err.message;
+
   }
+
 }
 
-// 添加消息
-function addMsg(role, text){
-  const div = document.createElement("div");
-  div.className = "msg " + role;
-  div.innerText = text;
+/* =========================
+   💬 添加消息
+========================= */
 
-  document.getElementById("chatBox").appendChild(div);
+function addMessage(role,text){
+
+  const div =
+  document.createElement("div");
+
+  div.className =
+  "msg "+role;
+
+  div.innerText =
+  text;
+
+  document
+  .getElementById("chatBox")
+  .appendChild(div);
+
   scrollBottom();
+
   return div;
+
 }
 
-// 打字机效果
-function typeWriter(el, text){
+/* =========================
+   ⌨️ 打字机效果
+========================= */
+
+function typeWriter(el,text){
+
   let i = 0;
+
   el.innerText = "";
 
-  const timer = setInterval(() => {
+  const timer =
+  setInterval(()=>{
+
     el.innerText += text[i];
+
     i++;
-    if(i >= text.length) clearInterval(timer);
+
     scrollBottom();
-  }, 15);
+
+    if(i >= text.length){
+      clearInterval(timer);
+    }
+
+  },10);
+
 }
 
+/* =========================
+   📜 自动滚动
+========================= */
+
 function scrollBottom(){
-  const box = document.getElementById("chatBox");
-  box.scrollTop = box.scrollHeight;
+
+  const box =
+  document.getElementById("chatBox");
+
+  box.scrollTop =
+  box.scrollHeight;
+
 }
+
+/* =========================
+   ⌨️ 回车发送
+========================= */
+
+document
+.getElementById("userInput")
+.addEventListener("keydown",(e)=>{
+
+  if(e.key === "Enter"){
+    sendMessage();
+  }
+
+});
+
+/* =========================
+   🖱️ 3D鼠标互动
+========================= */
+
+document.addEventListener("mousemove",(e)=>{
+
+  const x =
+  (window.innerWidth / 2 - e.clientX) / 40;
+
+  const y =
+  (window.innerHeight / 2 - e.clientY) / 40;
+
+  document
+  .getElementById("sidebar")
+  .style.transform =
+  `
+  rotateY(${x}deg)
+  rotateX(${-y}deg)
+  `;
+
+});
 
 </script>
 
