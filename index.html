@@ -1,34 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学 v15 FIX MOBILE</title>
-
+<!-- 强制手机完美适配 -->
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>情感陪伴</title>
 <style>
-
-/* ======================
-   📱 手机适配修复核心
-====================== */
-html,body{
-  margin:0;
-  padding:0;
-  height:100%;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont;
-  background:#0b1220;
-  color:white;
+html,body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b1220;
+  color: #fff;
+  font-family: sans-serif;
 }
 
-/* ⭐ 关键修复：安全高度 */
-body{
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-/* ======================
-   🧿 开屏动画 保留
-====================== */
+/* ========== 新增：iOS开屏动画 ========== */
 #splash {
   position: fixed;
   top: 0;
@@ -40,11 +28,10 @@ body{
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity 0.8s ease;
 }
 #splash-text {
   font-size: 28px;
-  font-weight: 500;
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 1.2s ease, transform 1.2s ease;
@@ -54,89 +41,81 @@ body{
   pointer-events: none;
 }
 
-/* ======================
-   💬 聊天区域修复
-====================== */
-#box{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom: calc(70px + env(safe-area-inset-bottom));
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  padding:16px;
-  box-sizing:border-box;
+/* 聊天区域 适配不被输入框挡住 */
+#box {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 85px;
+  overflow-y: auto;
+  padding: 15px;
+  box-sizing: border-box;
 }
 
-/* ======================
-   🧠 消息气泡
-====================== */
-.msg{
-  max-width:78%;
-  margin:10px 0;
-  padding:12px 14px;
-  border-radius:14px;
-  white-space:pre-wrap;
-  word-break:break-word;
+/* 消息气泡 */
+.msg {
+  max-width: 75%;
+  border-radius: 18px;
+  padding: 12px 15px;
+  margin: 8px 0;
+  line-height: 1.6;
+  font-size: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.user {
+  margin-left: auto;
+  background: #007aff;
+  border-bottom-right-radius: 5px;
+}
+.ai {
+  margin-right: auto;
+  background: #202938;
+  border-bottom-left-radius: 5px;
 }
 
-.user{margin-left:auto;background:#007aff;}
-.ai{margin-right:auto;background:rgba(255,255,255,0.08);}
-
-/* ======================
-   ⌨️ 输入栏修复（核心）
-====================== */
-#bar{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  height:70px;
-  display:flex;
-  align-items:center;
-  padding:10px;
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
-  background:rgba(20,25,40,0.85);
-  backdrop-filter: blur(20px);
-  box-sizing:border-box;
+/* 底部输入栏 固定在手机底部 */
+#bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  /* 适配手机底部安全区 */
+  padding-bottom: env(safe-area-inset-bottom);
+  background: #151c2b;
+  display: flex;
+  gap: 10px;
+  box-sizing: border-box;
 }
 
-input{
-  flex:1;
-  height:44px;
-  font-size:16px;
-  border:none;
-  outline:none;
-  border-radius:12px;
-  padding:0 12px;
-  background:rgba(255,255,255,0.08);
-  color:white;
+input {
+  flex: 1;
+  height: 45px;
+  border: none;
+  outline: none;
+  border-radius: 25px;
+  padding: 0 18px;
+  background: #2a3447;
+  color: #fff;
+  font-size: 16px;
 }
 
-button{
-  margin-left:10px;
-  padding:10px 14px;
-  border:none;
-  border-radius:12px;
-  background:#007aff;
-  color:white;
+button {
+  padding: 0 18px;
+  height: 45px;
+  border: none;
+  border-radius: 25px;
+  background: #007aff;
+  color: #fff;
+  font-size: 15px;
 }
-
-/* ======================
-   📱 防键盘遮挡优化
-====================== */
-@supports (-webkit-touch-callout: none) {
-  #bar{
-    position: fixed;
-  }
-}
-
 </style>
 </head>
-
 <body>
 
+<!-- 开屏动画 -->
 <div id="splash">
   <div id="splash-text">🤷🏻‍♂️小胡同学</div>
 </div>
@@ -144,172 +123,136 @@ button{
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="说点什么..." />
+  <input id="inp" placeholder="随便说说心事...">
   <button onclick="send()">发送</button>
 </div>
 
 <script>
+const box = document.getElementById('box');
+const inp = document.getElementById('inp');
 
-/* ======================
-   🧠 原系统（完全不改）
-====================== */
-let messages = JSON.parse(localStorage.getItem("mem") || "[]");
-const box = document.getElementById("box");
-
-let emotionScore = 0.5;
-
-// ========= 新增：记录已使用语录 实现不重复 =========
+// 记录已使用回复，实现永不重复
 let usedLines = JSON.parse(localStorage.getItem("usedLines") || "[]");
 
-/* ===== 情绪识别 ===== */
-function detectEmotion(text){
-  if(["想死","绝望","崩溃","撑不住"].some(w=>text.includes(w))) return "deep";
-  if(["孤独","焦虑","压力","空虚"].some(w=>text.includes(w))) return "mid";
-  if(["累","烦","难过"].some(w=>text.includes(w))) return "light";
-  return "none";
+// 情绪话术库 扩充足量句子，保证不重复
+const lib = {
+  lei: [
+    "我能感觉到你真的很累，不用硬撑。",
+    "累了就好好歇一歇，不用逼自己。",
+    "你已经扛了很久，真的辛苦了。",
+    "不用一直紧绷着，允许自己偷懒一会。",
+    "身心都疲惫的时候，停下来没关系的。"
+  ],
+  nan: [
+    "心里难受不用憋着，我陪着你。",
+    "委屈都可以跟我说，不用假装没事。",
+    "看得出来你心情很低落，我懂。",
+    "不用在我面前故作坚强，难过就直说。",
+    "情绪低落很正常，不用责怪自己。"
+  ],
+  gu: [
+    "孤独的感觉我特别能理解。",
+    "你不是一个人，我一直在。",
+    "没人懂你的滋味，我能感受到。",
+    "表面安静，其实心里很渴望被理解对吧。",
+    "热闹不属于你也没关系，我陪你安静。"
+  ],
+  mi: [
+    "迷茫的时候不用急着做决定。",
+    "慢慢来就好，不用逼自己立刻有答案。",
+    "心里慌慌的，我都明白。",
+    "暂时看不清未来很正常，不用焦虑。",
+    "路都是慢慢走出来的，不用现在想通透。"
+  ],
+  xiang: [
+    "你总是太敏感，容易想太多折磨自己。",
+    "别再胡思乱想了，放过自己一点。",
+    "心思细腻的人，本来就容易内耗。",
+    "别反复纠结没发生的事，徒增烦恼。",
+    "想太多只会消耗自己，别为难自己了。"
+  ],
+  anquan: [
+    "我不会离开你的，一直都在。",
+    "不管你情绪好不好，我都不会走。",
+    "你可以安心依赖我，不会丢下你。",
+    "不用害怕我会走，我一直稳稳陪着你。",
+    "你的不安我都懂，我不会轻易离开。"
+  ],
+  default: [
+    "我在认真听你说，继续讲就好。",
+    "嗯，我能懂你想表达的。",
+    "你慢慢说，我一直都在听。",
+    "原来是这样，我在好好感受你的话。",
+    "你愿意多说一点也没关系，我一直在。"
+  ]
+};
+
+// 关键词匹配
+function getType(t){
+  if(/累|疲惫|心累/.test(t)) return 'lei';
+  if(/难过|委屈|想哭|心情不好|丧/.test(t)) return 'nan';
+  if(/孤独|孤单|没人懂|一个人/.test(t)) return 'gu';
+  if(/迷茫|焦虑|不知道怎么办/.test(t)) return 'mi';
+  if(/想太多|胡思乱想|内耗|敏感/.test(t)) return 'xiang';
+  if(/会离开|一直陪|会不会走|抛弃/.test(t)) return 'anquan';
+  return 'default';
 }
 
-/* ===== 关系问题 ===== */
-function isBondQuestion(text){
-  return ["会一直在","会离开","会陪我","会走吗","会不会不见"].some(w=>text.includes(w));
-}
-
-/* ===== 成长 ===== */
-function evolve(text){
-  if(detectEmotion(text)!=="none") emotionScore+=0.05;
-  emotionScore=Math.min(1,emotionScore);
-}
-
-/* ===== 安慰语录库 扩充多条 方便不重复 ===== */
-const LIGHT=[
-  "你已经很累了，可以慢一点。",
-  "不用逼自己现在变好。",
-  "你已经做得很好了。",
-  "累了就允许自己放慢脚步。",
-  "不必事事勉强自己撑着。"
-];
-
-const MID=[
-  "我能感觉你现在不太好。",
-  "你不是一个人。",
-  "慢慢说没关系。",
-  "心里的压抑可以慢慢倾诉。",
-  "我能懂你此刻的不安与孤单。"
-];
-
-const DEEP=[
-  "我在这里，不会走。",
-  "你可以停下来。",
-  "不用解释，我在。",
-  "再难我也会陪着你熬过去。",
-  "你不用硬撑脆弱给任何人看。"
-];
-
-/* ===== 新增：从不重复随机取句 ===== */
-function getNoRepeatLine(arr){
-  // 过滤已经用过的
+// 从不重复取回复
+function getUniqueReply(arr){
   let rest = arr.filter(item => !usedLines.includes(item));
-  // 用完清空重置
   if(rest.length === 0){
     usedLines = [];
     localStorage.setItem("usedLines", JSON.stringify(usedLines));
     rest = arr;
   }
-  // 随机选一条
   let pick = rest[Math.floor(Math.random() * rest.length)];
-  // 记录为已使用
   usedLines.push(pick);
   localStorage.setItem("usedLines", JSON.stringify(usedLines));
   return pick;
 }
 
-/* ===== 安慰系统（原版逻辑不变，只替换取值方式） ===== */
-function comfort(text){
-  const level = detectEmotion(text);
-  let pool =
-    level==="deep"?DEEP:
-    level==="mid"?MID:LIGHT;
-  // 调用不重复取值
-  return getNoRepeatLine(pool);
-}
-
-/* ===== 关系回复 ===== */
-function bondReply(){
-  if(emotionScore>0.7) return "我不会轻易离开你。";
-  if(emotionScore>0.4) return "我会在这里。";
-  return "我在听你说。";
-}
-
-/* ===== AI核心 ===== */
-function reply(text){
-  evolve(text);
-  let think=["……让我想一下。","我在整理你的话。"];
-  let base=think[Math.floor(Math.random()*think.length)];
-
-  if(isBondQuestion(text)){
-    return base+"\n\n"+bondReply();
-  }
-
-  if(detectEmotion(text)!=="none"){
-    return base+"\n\n"+comfort(text);
-  }
-
-  return base+"\n\n我理解你的意思。";
-}
-
-/* ======================
-   💬 UI
-====================== */
-function add(role,text){
-  const d=document.createElement("div");
-  d.className="msg "+role;
-  d.innerText=text;
-  box.appendChild(d);
-  setTimeout(()=>{
-    box.scrollTop = box.scrollHeight;
-  },10);
-  return d;
-}
-
-/* ======================
-   ✨ 打字
-====================== */
-function type(el,text){
-  el.innerText="";
-  let i=0;
+// 打字机效果
+function typeWrite(el, text){
+  el.innerText = "";
+  let i = 0;
   function step(){
-    if(i<text.length){
-      el.innerText+=text[i++];
-      box.scrollTop=box.scrollHeight;
-      setTimeout(step,12);
+    if(i < text.length){
+      el.innerText += text[i++];
+      box.scrollTop = box.scrollHeight;
+      setTimeout(step,15);
     }
   }
   step();
 }
 
-/* ======================
-   🚀 SEND
-====================== */
-function send(){
-  const input=document.getElementById("input");
-  const text=input.value.trim();
-  if(!text) return;
-  input.value="";
-  add("user",text);
-  const ai=add("ai","...");
-  const res=reply(text);
-  type(ai,res);
-  messages.push({role:"user",content:text});
-  messages.push({role:"assistant",content:res});
-  localStorage.setItem("mem",JSON.stringify(messages));
+// 添加消息
+function add(role, txt){
+  let d = document.createElement('div');
+  d.className = 'msg ' + role;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  return d;
 }
 
-/* ======================
-   🔄 恢复
-====================== */
-messages.forEach(m=>add(m.role,m.content));
+// 发送消息
+function send(){
+  let t = inp.value.trim();
+  if(!t) return;
+  inp.value = '';
+  add('user', t);
+  let aiDom = add('ai', '...');
+  let arr = lib[getType(t)];
+  let res = getUniqueReply(arr);
+  setTimeout(() => typeWrite(aiDom, res), 400);
+}
 
-// 开屏动画
+// 回车发送
+inp.addEventListener('keydown', e => {
+  if(e.key === 'Enter') send();
+});
+
+// ========== 开屏动画逻辑 ==========
 window.onload = function(){
   const splash = document.getElementById('splash');
   const splashText = document.getElementById('splash-text');
@@ -321,7 +264,6 @@ window.onload = function(){
     splash.classList.add('hide');
   }, 2200);
 }
-
 </script>
 
 </body>
