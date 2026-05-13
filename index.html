@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>小胡同学pro</title>
+<title>🤷🏻‍♂️ 小胡同学pro</title>
 
 <style>
 body{
@@ -14,8 +14,58 @@ body{
   overflow:hidden;
 }
 
-/* ===== 聊天容器 ===== */
+/* ======================
+   🚀 BOOT
+====================== */
+#boot{
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#1e293b,#0b1220);
+}
+
+/* 🫧 Logo果冻 */
+@keyframes bootJelly {
+  0% { transform: scale(0.4); opacity:0; }
+  45% { transform: scale(1.15); opacity:1; }
+  65% { transform: scale(0.95); }
+  85% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+#bootTitle{
+  font-size:26px;
+  margin-bottom:10px;
+  animation:bootJelly 0.8s cubic-bezier(.2,.9,.2,1);
+}
+
+#bootText{
+  max-width:600px;
+  text-align:center;
+  font-size:15px;
+  min-height:40px;
+  opacity:0.9;
+}
+
+#enterBtn{
+  margin-top:20px;
+  padding:12px 18px;
+  border:none;
+  border-radius:14px;
+  background:#007aff;
+  color:white;
+  opacity:0;
+  transition:0.4s;
+}
+
+/* ======================
+   💬 CHAT
+====================== */
 #box{
+  display:none;
   height:100vh;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
@@ -23,7 +73,7 @@ body{
   padding-bottom:140px;
 }
 
-/* ===== 气泡 ===== */
+/* 气泡 */
 .msg{
   max-width:78%;
   margin:10px 0;
@@ -33,7 +83,6 @@ body{
   white-space:pre-wrap;
   word-break:break-word;
   backdrop-filter: blur(10px);
-  transform-origin: bottom;
 }
 
 /* 用户 */
@@ -48,20 +97,21 @@ body{
   margin-right:auto;
 }
 
-/* ===== 🫧 高级果冻动画（优化版） ===== */
+/* 🫧 果冻气泡 */
 @keyframes jelly {
-  0% { transform: scale(0.6); opacity:0; }
+  0% { transform: scale(0.5); opacity:0; }
   40% { transform: scale(1.12); opacity:1; }
   60% { transform: scale(0.96); }
-  80% { transform: scale(1.02); }
   100% { transform: scale(1); }
 }
 
 .jelly{
-  animation:jelly 0.38s cubic-bezier(.2,.9,.2,1);
+  animation:jelly 0.35s cubic-bezier(.2,.9,.2,1);
 }
 
-/* ===== 输入栏 ===== */
+/* ======================
+   📱 输入栏
+====================== */
 #bar{
   position:fixed;
   bottom:0;
@@ -72,6 +122,7 @@ body{
   padding-bottom:calc(10px + env(safe-area-inset-bottom));
   background:rgba(20,25,40,0.85);
   backdrop-filter: blur(20px);
+  display:none;
 }
 
 input{
@@ -98,6 +149,18 @@ button{
 
 <body>
 
+<!-- ======================
+     🚀 BOOT SCREEN
+====================== -->
+<div id="boot">
+  <div id="bootTitle">🤷🏻‍♂️ 小胡同学pro</div>
+  <div id="bootText"></div>
+  <button id="enterBtn" onclick="enter()">Enter System</button>
+</div>
+
+<!-- ======================
+     💬 CHAT
+====================== -->
 <div id="box"></div>
 
 <div id="bar">
@@ -108,7 +171,7 @@ button{
 <script>
 
 /* ======================
-   ⚙️ API配置
+   ⚙️ API
 ====================== */
 const API_URL = "https://new-api-production-ef85.up.railway.app/v1/chat/completions";
 
@@ -121,47 +184,83 @@ const MODELS = [
 let messages = [];
 
 /* ======================
-   💬 UI（优化滚动）
+   🚀 BOOT动画（逐字+果冻）
+====================== */
+const bootText = "正在叫胡智奕起床...等会... system ready ✔";
+
+let i = 0;
+const bootEl = document.getElementById("bootText");
+const btn = document.getElementById("enterBtn");
+
+function boot(){
+
+  if(i < bootText.length){
+
+    const span = document.createElement("span");
+
+    span.innerText = bootText[i];
+
+    span.style.display = "inline-block";
+    span.style.animation = "bootJelly 0.35s ease-out";
+
+    bootEl.appendChild(span);
+
+    i++;
+
+    setTimeout(boot, 35);
+
+  } else {
+    btn.style.opacity = 1;
+  }
+}
+
+boot();
+
+/* ======================
+   👉 进入系统
+====================== */
+function enter(){
+  document.getElementById("boot").style.display="none";
+  document.getElementById("box").style.display="block";
+  document.getElementById("bar").style.display="flex";
+}
+
+/* ======================
+   💬 UI
 ====================== */
 function add(role,text){
-
   const div=document.createElement("div");
   div.className="msg "+role+" jelly";
   div.innerText=text;
 
   const box=document.getElementById("box");
   box.appendChild(div);
-
-  requestAnimationFrame(()=>{
-    box.scrollTop = box.scrollHeight;
-  });
+  box.scrollTop = box.scrollHeight;
 
   return div;
 }
 
 /* ======================
-   ✨ 更自然逐字
+   ✨ 逐字输出
 ====================== */
 function type(el,text){
 
-  if(!text || text.length === 0){
-    el.innerText = "（无返回内容）";
+  if(!text){
+    el.innerText="（无返回）";
     return;
   }
 
-  el.innerHTML = "";
+  el.innerHTML="";
 
-  let i = 0;
-  let out = "";
+  let i=0;
+  let out="";
 
   function run(){
-    if(i < text.length){
+    if(i<text.length){
       out += text[i];
       el.innerHTML = out;
       i++;
-
-      const speed = Math.random()*12 + 6;
-      setTimeout(run, speed);
+      setTimeout(run, Math.random()*12+6);
     }
   }
 
@@ -192,14 +291,12 @@ async function send(){
 }
 
 /* ======================
-   🧠 AI核心（强化稳定版）
+   🧠 AI（稳定版）
 ====================== */
 async function askAI(text){
 
   for(let m of MODELS){
-
     try{
-
       const res=await fetch(API_URL,{
         method:"POST",
         headers:{"Content-Type":"application/json"},
@@ -213,31 +310,26 @@ async function askAI(text){
 
       const c=data?.choices?.[0]?.message?.content;
 
-      if(c && typeof c === "string" && c.trim().length>0){
+      if(c && c.trim().length>0){
         return c;
       }
 
-    }catch(e){
-      console.log("model fail:", m);
-    }
+    }catch(e){}
   }
 
   return offline(text);
 }
 
 /* ======================
-   🔴 离线兜底（增强版）
+   🔴 离线模式
 ====================== */
 function offline(text){
 
-  const t = text || "";
+  if(text.includes("你好")) return "胡智奕在睡觉我去叫他起床";
+  if(text.includes("你是谁")) return "我是小胡同学，胡智奕创造了我";
+  if(text.includes("怎么")) return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
 
-  if(t.includes("你好")) return "胡智奕在睡觉我去叫他起床";
-  if(t.includes("你是谁")) return "我是小胡同学，胡智奕创造了我";
-  if(t.includes("怎么")) return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
-  if(t.includes("什么")) return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅";
-
-  return "当前AI不可用，但我仍然可以理解你的问题🙂";
+  return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅";
 }
 
 </script>
