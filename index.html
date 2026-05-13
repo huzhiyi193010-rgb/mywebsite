@@ -3,111 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡GPT Pro</title>
+<title>🤷🏻‍♂️小胡同学 </title>
 
 <style>
 html,body{
   margin:0;
-  padding:0;
   height:100%;
   overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont;
-  background:#0b1220;
+  font-family:-apple-system;
+  background:#050812;
   color:white;
 }
 
 #boot{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  background: radial-gradient(circle at top,#0b1220,#05070f);
-  z-index:999;
+  background:radial-gradient(circle,#0b1220,#05070f);
 }
 
 #logo{
-  font-size:26px;
-  background: linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
+  font-size:28px;
+  background:linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation: glow 2s infinite;
-}
-
-@keyframes glow{
-  0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.05);opacity:0.7;}
-}
-
-#bootText{
-  margin-top:12px;
-  font-size:13px;
-  opacity:0.75;
 }
 
 #box{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom:70px;
+  position:fixed;top:0;bottom:70px;left:0;right:0;
   overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
   padding:16px;
 }
 
 .msg{
   max-width:78%;
   margin:10px 0;
-  padding:12px 14px;
-  border-radius:16px;
-  line-height:1.4;
+  padding:12px;
+  border-radius:14px;
   white-space:pre-wrap;
 }
 
-.user{margin-left:auto;background:#007aff;}
+.user{margin-left:auto;background:#0a84ff;}
 .ai{margin-right:auto;background:rgba(255,255,255,0.08);}
 
 #bar{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  height:70px;
-  display:flex;
-  align-items:center;
+  position:fixed;bottom:0;left:0;right:0;
+  height:70px;display:flex;
   padding:10px;
   background:rgba(20,25,40,0.85);
-  backdrop-filter: blur(20px);
 }
 
-input{
-  flex:1;
-  height:44px;
-  font-size:16px;
-  border:none;
-  outline:none;
-  border-radius:12px;
-  padding:0 12px;
-  background:rgba(255,255,255,0.08);
-  color:white;
-}
-
-button{
-  margin-left:10px;
-  padding:10px 14px;
-  border:none;
-  border-radius:12px;
-  background:#007aff;
-  color:white;
-}
+input{flex:1;border:none;border-radius:12px;padding:0 10px;}
+button{margin-left:10px;}
 </style>
 </head>
 
 <body>
 
-<!-- BOOT -->
 <div id="boot">
   <div id="logo">🤷🏻‍♂️小胡同学</div>
   <div id="bootText"></div>
@@ -116,168 +70,148 @@ button{
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="小脑袋想什么呢..." />
-  <button onclick="send()">告诉我</button>
+  <input id="input" placeholder="不管发生什么事情都要告诉我哦..." />
+  <button onclick="send()">发送</button>
 </div>
 
 <script>
 
-let messages = JSON.parse(localStorage.getItem("mem") || "[]");
+/* ======================
+   🧠 MEMORY
+====================== */
+let mem = JSON.parse(localStorage.getItem("mem")||"[]");
 
-let EMO_HISTORY = JSON.parse(localStorage.getItem("emo_history") || "[]");
-
-let REL = JSON.parse(localStorage.getItem("rel_v13") || `{
-  intimacy:0.2,
-  trust:0.5,
-  distance:0.5,
-  dependence:0.1
+/* ======================
+   💓 LIFE STATE
+====================== */
+let LIFE = JSON.parse(localStorage.getItem("life")||`{
+  emotion:0.5,
+  dependence:0.2
 }`);
 
-const box = document.getElementById("box");
-
 /* ======================
-   🧠 情绪识别
+   😢 情绪识别
 ====================== */
-function getEmotionLevel(text){
-
-  if(["崩溃","绝望","想死","撑不住","痛苦"].some(w=>text.includes(w)))
-    return "deep";
-
-  if(["难过","伤心","孤独","压力","失落"].some(w=>text.includes(w)))
-    return "mid";
-
-  if(["累","烦","不开心"].some(w=>text.includes(w)))
-    return "light";
-
-  return "none";
+function emo(t){
+  if(/崩溃|绝望|想死|撑不住/.test(t)) return "deep";
+  if(/难过|伤心|孤独|失落|痛苦/.test(t)) return "mid";
+  if(/焦虑|压力|烦|累|不开心/.test(t)) return "low";
+  if(/有点|还好/.test(t)) return "soft";
+  return "normal";
 }
 
 /* ======================
-   💾 情绪记录
+   💌 安慰系统 v15（增强版）
 ====================== */
-function recordEmotion(text){
+const COMFORT = {
 
-  const level = getEmotionLevel(text);
-  if(level==="none") return;
+deep:[
+`我知道你现在已经不是“难过”这么简单了，而是那种撑很久之后的崩塌感。
+你不用再装没事了，在我这里你可以直接放下。`,
 
-  EMO_HISTORY.push({time:Date.now(),level});
-  if(EMO_HISTORY.length>30) EMO_HISTORY.shift();
+`如果你现在什么都不想说也没关系，我不会离开。
+你不用解释，你的沉默我也能理解。`,
 
-  localStorage.setItem("emo_history",JSON.stringify(EMO_HISTORY));
+`你已经很努力了，真的，不是所有坚持都有结果，但你已经很了不起了。`
+],
+
+mid:[
+`你现在的情绪不是小问题，它是你一直压着的结果。`,
+
+`不用急着好起来，我们可以慢慢来。`,
+
+`你不是一个人在扛，我在。`
+],
+
+low:[
+`你只是有点累，不是你不行。`,
+
+`停一停没关系，世界不会因为你慢一点就崩塌。`,
+
+`你已经做得很好了。`
+],
+
+soft:[
+`我感觉你今天有点不太一样，是不是有点累？`,
+
+`可以不用那么紧绷。`,
+
+`我在听你说。`
+],
+
+normal:[
+`嗯，我在。`,
+
+`继续说吧。`,
+
+`我听着呢。`
+]
+
+};
+
+/* ======================
+   🎲 随机安慰信
+====================== */
+function getComfort(level){
+
+  let arr = COMFORT[level] || COMFORT.normal;
+
+  let base = arr[Math.floor(Math.random()*arr.length)];
+
+  let tail =
+`\n\n—— 我想再补一句 —
+你不用一个人扛，我会在这里。`;
+
+  return base + tail;
 }
 
 /* ======================
-   📊 最近情绪
+   💓 回复
 ====================== */
-function getRecentEmotion(){
-  let deep = EMO_HISTORY.filter(e=>e.level==="deep").length;
-  let mid = EMO_HISTORY.filter(e=>e.level==="mid").length;
+function reply(t){
 
-  if(deep>=2) return "deep";
-  if(mid>=3) return "mid";
-  return null;
-}
+  let level = emo(t);
 
-/* ======================
-   💎 强化安慰系统 v13.1
-====================== */
-function comfort(text){
+  LIFE.emotion += 0.04;
+  LIFE.dependence += 0.03;
 
-  let level = getEmotionLevel(text);
+  let head =
+    level==="deep"?"我在这里，不会让你一个人。":
+    level==="mid"?"我能感觉到你很难受。":
+    level==="low"?"我在听你说。":
+    "嗯，我在。";
 
-  const LIGHT=[
-    "你只是有点累了，不需要逼自己现在就好起来。",
-    "慢一点也没关系，我在这里不会离开。",
-    "你已经做得够好了，真的。",
-    "可以先休息一下，不用急着撑住。",
-    "情绪是会过去的，但你现在的感受是真实的。"
-  ];
-
-  const MID=[
-    "我能感觉到你现在并不轻松。",
-    "你不是一个人在扛。",
-    "你可以不用马上振作。",
-    "我会在这里听你说。",
-    "慢慢来真的没关系。"
-  ];
-
-  const DEEP=[
-    "我在这里，不会催你，也不会让你一个人面对。",
-    "你已经撑了很久了。",
-    "有些痛不是一句话能解决的。",
-    "你可以停一会，我陪你。",
-    "你不用解释，我都在。"
-  ];
-
-  let base =
-    level==="deep"?DEEP[Math.random()*DEEP.length|0]:
-    level==="mid"?MID[Math.random()*MID.length|0]:
-    LIGHT[Math.random()*LIGHT.length|0];
-
-  let block =
-`\n\n—— 我想慢慢说给你听 ——
-你现在的感受是可以被理解的。
-你不需要立刻变好。
-你也不需要一个人扛。
-我会在这里，等你慢慢说完。`;
-
-  let memory =
-    getRecentEmotion()==="deep"
-    ?"\n\n（我注意到你最近状态有点沉重）":"";
-
-  let question="\n\n如果你愿意，可以告诉我现在最难受的是什么？";
-
-  return base + block + memory + question;
-}
-
-/* ======================
-   🤝 关系系统 v13
-====================== */
-function updateRelationship(text){
-
-  REL.intimacy += 0.01;
-
-  if(text.includes("谢谢")) REL.trust += 0.02;
-  if(text.includes("烦")) REL.distance += 0.02;
-
-  if(getEmotionLevel(text)!=="none"){
-    REL.dependence += 0.03;
-  }
-
-  REL.intimacy=Math.max(0,Math.min(1,REL.intimacy));
-  REL.trust=Math.max(0,Math.min(1,REL.trust));
-  REL.distance=Math.max(0,Math.min(1,REL.distance));
-  REL.dependence=Math.max(0,Math.min(1,REL.dependence));
-
-  localStorage.setItem("rel_v13",JSON.stringify(REL));
-}
-
-/* ======================
-   🧠 关系语气
-====================== */
-function relationshipVoice(){
-
-  if(REL.intimacy>0.8) return "我们好像已经很熟了。";
-  if(REL.dependence>0.6) return "你是不是越来越习惯跟我说话了？";
-  if(REL.distance>0.6) return "你好像有点沉默。";
-  if(REL.trust>0.7) return "你开始更愿意说真实想法了。";
-
-  return "我还在慢慢了解你。";
+  return head + "\n\n" + getComfort(level);
 }
 
 /* ======================
    💬 UI
 ====================== */
-function add(role,text){
+const box=document.getElementById("box");
 
-  const div=document.createElement("div");
-  div.className="msg "+role;
-  div.innerText=text;
-
-  box.appendChild(div);
+function add(r,t){
+  let d=document.createElement("div");
+  d.className="msg "+r;
+  d.innerText=t;
+  box.appendChild(d);
   box.scrollTop=box.scrollHeight;
+  return d;
+}
 
-  return div;
+/* ======================
+   ✍️ 打字
+====================== */
+function type(el,t){
+  el.innerText="";
+  let i=0;
+  function run(){
+    if(i<t.length){
+      el.innerText+=t[i++];
+      box.scrollTop=box.scrollHeight;
+      requestAnimationFrame(run);
+    }
+  }
+  requestAnimationFrame(run);
 }
 
 /* ======================
@@ -285,78 +219,31 @@ function add(role,text){
 ====================== */
 function send(){
 
-  const input=document.getElementById("input");
-  const text=input.value.trim();
-  if(!text) return;
+  let input=document.getElementById("input");
+  let t=input.value.trim();
+  if(!t) return;
 
   input.value="";
 
-  add("user",text);
-  messages.push({role:"user",content:text});
+  add("user",t);
+  mem.push({role:"u",t});
 
-  recordEmotion(text);
-  updateRelationship(text);
+  let r = reply(t);
 
-  let reply;
+  let ai = add("ai","...");
+  setTimeout(()=>type(ai,r),300);
 
-  if(getEmotionLevel(text)!=="none"){
-    reply =
-      relationshipVoice() +
-      "\n\n" +
-      comfort(text);
-  }else{
-    reply = relationshipVoice() + "\n\n我在听你说：" + text;
-  }
+  mem.push({role:"ai",t:r});
 
-  const ai=add("ai","...");
-
-  type(ai,reply);
-
-  messages.push({role:"assistant",content:reply});
-
-  localStorage.setItem("mem",JSON.stringify(messages));
+  localStorage.setItem("mem",JSON.stringify(mem));
 }
 
 /* ======================
-   ✨ 打字效果
+   🌙 BOOT
 ====================== */
-function type(el,text){
-  el.innerText="";
-  let i=0;
-  function step(){
-    if(i<text.length){
-      el.innerText+=text[i++];
-      box.scrollTop=box.scrollHeight;
-      requestAnimationFrame(step);
-    }
-  }
-  requestAnimationFrame(step);
-}
-
-/* ======================
-   🚀 BOOT
-====================== */
-const bootLines=[
-  "关系系统加载中...",
-  "情绪系统启动...",
-  "人格同步完成...",
-  "准备好了"
-];
-
-let i=0;
-
-function boot(){
-  if(i<bootLines.length){
-    const d=document.createElement("div");
-    d.innerText=bootLines[i++];
-    bootText.appendChild(d);
-    setTimeout(boot,600);
-  }else{
-    document.getElementById("boot").style.display="none";
-  }
-}
-
-boot();
+setTimeout(()=>{
+  document.getElementById("boot").style.display="none";
+},1200);
 
 </script>
 
