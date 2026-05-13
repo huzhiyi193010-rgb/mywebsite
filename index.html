@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学 v15</title>
+<title>🤷🏻‍♂️小胡同学 v15 FINAL</title>
 
 <style>
 html,body{
   margin:0;
-  padding:0;
   height:100%;
   overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont;
@@ -18,22 +17,21 @@ html,body{
 
 #box{
   position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  bottom:70px;
+  top:0;left:0;right:0;bottom:70px;
   overflow-y:auto;
   padding:16px;
   box-sizing:border-box;
+  -webkit-overflow-scrolling:touch;
 }
 
 .msg{
   max-width:78%;
   margin:10px 0;
   padding:12px 14px;
-  border-radius:16px;
+  border-radius:14px;
   line-height:1.4;
   white-space:pre-wrap;
+  word-break:break-word;
 }
 
 .user{margin-left:auto;background:#007aff;}
@@ -41,9 +39,7 @@ html,body{
 
 #bar{
   position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
+  bottom:0;left:0;right:0;
   height:70px;
   display:flex;
   align-items:center;
@@ -55,13 +51,13 @@ html,body{
 input{
   flex:1;
   height:44px;
-  font-size:16px;
   border:none;
-  outline:none;
   border-radius:12px;
   padding:0 12px;
+  font-size:16px;
   background:rgba(255,255,255,0.08);
   color:white;
+  outline:none;
 }
 
 button{
@@ -86,113 +82,105 @@ button{
 
 <script>
 
+/* ======================
+   🧠 记忆
+====================== */
 let messages = JSON.parse(localStorage.getItem("mem") || "[]");
 const box = document.getElementById("box");
 
 /* ======================
-   🧠 AI 情绪系统 v15
+   🧠 AI状态系统
 ====================== */
-let AI_STATE = {
+let AI = {
   warmth: 0.6,
-  calm: 0.5,
-  attachment: 0.3,
-  tired: 0.2
+  tired: 0.2,
+  attachment: 0.3
 };
 
-/* ======================
-   🧠 情绪连续值（关键升级）
-====================== */
 let emotionScore = 0.5;
 
 /* ======================
-   🧠 AI成长系统
+   🧠 情绪识别
 ====================== */
-function evolveAI(text){
-
-  emotionScore += text.includes("难过") ? 0.05 : 0;
-  emotionScore += text.includes("谢谢") ? 0.03 : 0;
-  emotionScore += text.includes("烦") ? 0.02 : 0;
-
-  emotionScore = Math.max(0, Math.min(1, emotionScore));
-
-  AI_STATE.warmth = Math.min(1, AI_STATE.warmth + emotionScore * 0.02);
-  AI_STATE.attachment = Math.min(1, AI_STATE.attachment + 0.01);
-
-  if(text.includes("算了")) AI_STATE.tired += 0.03;
+function isSad(text){
+  return ["难过","伤心","孤独","崩溃","累","烦","痛苦"].some(w=>text.includes(w));
 }
 
 /* ======================
-   🧠 安慰系统（升级版）
+   🧠 情绪成长
 ====================== */
-function comfort(text){
+function evolve(text){
+  if(isSad(text)) emotionScore += 0.05;
+  if(text.includes("谢谢")) emotionScore += 0.02;
 
-  const LIGHT=[
-    "你只是有点累了，不需要逼自己。",
-    "慢一点也没关系。",
+  emotionScore = Math.max(0,Math.min(1,emotionScore));
+
+  AI.warmth = Math.min(1, AI.warmth + emotionScore * 0.01);
+  if(text.includes("算了")) AI.tired += 0.03;
+}
+
+/* ======================
+   💬 安慰系统（稳定版）
+====================== */
+function comfort(){
+
+  const light = [
+    "你已经很累了，可以先休息一下。",
+    "慢一点没关系。",
     "你已经做得很好了。",
-    "可以先停一会。",
-    "情绪会过去的。"
+    "不用逼自己现在好起来。",
+    "我在这里。"
   ];
 
-  const MID=[
-    "我能感觉你不太好。",
+  const mid = [
+    "我能感觉你现在不太好。",
     "你不是一个人。",
-    "可以不用马上好起来。",
-    "我在听。",
-    "慢慢来。"
+    "可以不用马上振作。",
+    "慢慢说没关系。",
+    "我在听。"
   ];
 
-  const DEEP=[
+  const deep = [
     "我在这里，不会走。",
     "你已经撑很久了。",
-    "有些事情不需要立刻解决。",
     "你可以停下来。",
-    "不用解释。"
+    "不用解释，我在。",
+    "我不会催你。"
   ];
 
   let pool =
-    emotionScore > 0.75 ? DEEP :
-    emotionScore > 0.4 ? MID : LIGHT;
+    emotionScore > 0.7 ? deep :
+    emotionScore > 0.4 ? mid : light;
 
-  return pool[Math.random()*pool.length|0] +
-`
-
-……
-我想慢慢说给你听：
-你现在不需要变好，
-只需要被理解。
-
-如果你愿意，可以继续说。`;
+  return pool[Math.floor(Math.random()*pool.length)] +
+`\n\n我会一直在这里听你说。`;
 }
 
 /* ======================
-   🧠 “人味思考回复”
+   🧠 思考式AI回复（稳定版）
 ====================== */
-function thinkingReply(text){
+function reply(text){
 
-  evolveAI(text);
+  evolve(text);
 
   let think = [
     "……让我想一下。",
     "我刚刚停了一下。",
-    "这个问题我在整理怎么回答。"
+    "我在整理怎么说。"
   ];
 
-  let base = think[Math.random()*think.length|0];
+  let base = think[Math.floor(Math.random()*think.length)];
 
   let voice =
-    AI_STATE.warmth > 0.7 ? "我会一直在这里。" :
-    AI_STATE.tired > 0.6 ? "你可以慢一点说。" :
+    AI.warmth > 0.7 ? "我会在这里。" :
+    AI.tired > 0.6 ? "你可以慢一点说。" :
     "我在听你说。";
 
-  return base + "\n\n" + voice + "\n\n" + (isEmotion(text) ? comfort(text) : "我理解你的意思。");
-}
+  if(isSad(text)){
+    return base + "\n\n" + voice + "\n\n" + comfort();
+  }
 
-/* ======================
-   🧠 情绪判断
-====================== */
-function isEmotion(text){
-  return ["难过","伤心","孤独","累","烦","崩溃"].some(w=>text.includes(w));
+  return base + "\n\n" + voice + "\n\n我理解你的意思。";
 }
 
 /* ======================
@@ -205,6 +193,33 @@ function add(role,text){
   box.appendChild(div);
   box.scrollTop=box.scrollHeight;
   return div;
+}
+
+/* ======================
+   ✨ 安全打字（不会卡死）
+====================== */
+function type(el,text){
+
+  el.innerText = "";
+
+  let i = 0;
+  const max = text.length;
+
+  function step(){
+
+    if(i >= max){
+      return;
+    }
+
+    el.innerText += text[i];
+    i++;
+
+    box.scrollTop = box.scrollHeight;
+
+    setTimeout(step, 12); // ⭐稳定关键点（替代 RAF死循环）
+  }
+
+  step();
 }
 
 /* ======================
@@ -221,34 +236,19 @@ function send(){
   add("user",text);
   messages.push({role:"user",content:text});
 
-  const reply = thinkingReply(text);
-
   const ai = add("ai","...");
-  type(ai,reply);
 
-  messages.push({role:"assistant",content:reply});
+  const res = reply(text);
+
+  type(ai,res);
+
+  messages.push({role:"assistant",content:res});
 
   localStorage.setItem("mem",JSON.stringify(messages));
 }
 
 /* ======================
-   ✨ 打字效果
-====================== */
-function type(el,text){
-  el.innerText="";
-  let i=0;
-  function step(){
-    if(i<text.length){
-      el.innerText+=text[i++];
-      box.scrollTop=box.scrollHeight;
-      requestAnimationFrame(step);
-    }
-  }
-  requestAnimationFrame(step);
-}
-
-/* ======================
-   🔄 恢复聊天记录
+   🔄 恢复聊天
 ====================== */
 function restore(){
   messages.forEach(m=>{
@@ -256,167 +256,6 @@ function restore(){
   });
 }
 restore();
-
-</script>
-
-</body>
-</html>  height:44px;
-  font-size:16px;
-  border:none;
-  outline:none;
-  border-radius:12px;
-  padding:0 12px;
-  background:rgba(255,255,255,0.08);
-  color:white;
-}
-
-button{
-  margin-left:10px;
-  padding:10px 14px;
-  border:none;
-  border-radius:12px;
-  background:#007aff;
-  color:white;
-}
-</style>
-</head>
-
-<body>
-
-<!-- BOOT -->
-<div id="boot">
-  <div id="logo">🤷🏻‍♂️小胡同学</div>
-  <div id="bootText"></div>
-</div>
-
-<div id="box"></div>
-
-<div id="bar">
-  <input id="input" placeholder="怎么啦..." />
-  <button onclick="send()">发送</button>
-</div>
-
-<script>
-
-/* ======================
-   🧠 修复后的记忆系统
-====================== */
-let mem = JSON.parse(localStorage.getItem("mem") || "[]");
-const box = document.getElementById("box");
-
-/* ======================
-   💬 安慰系统（保留你原来的核心）
-====================== */
-const COMFORT=[
-"你已经很努力了，不需要逼自己。",
-"慢一点也没关系，我在这里。",
-"你不是一个人。",
-"你可以先休息一下。",
-"你已经做得很好了。",
-"我会在这里。",
-"情绪是真实的，不需要压抑。",
-"你不用马上好起来。",
-"我理解你。",
-"我不会离开。"
-];
-
-/* ======================
-   🧠 AI
-====================== */
-function ai(t){
-  if(/难过|伤心|崩溃|压力|孤独/.test(t)){
-    return COMFORT[Math.random()*COMFORT.length|0] + "\n\n我在这里。";
-  }
-  return "我在听你说：" + t;
-}
-
-/* ======================
-   💬 UI
-====================== */
-function add(role,text){
-  const d=document.createElement("div");
-  d.className="msg "+role;
-  d.innerText=text;
-  box.appendChild(d);
-
-  setTimeout(()=>{
-    box.scrollTop = box.scrollHeight;
-  },50);
-
-  return d;
-}
-
-/* ======================
-   🚀 SEND（已修复）
-====================== */
-function send(){
-
-  const input=document.getElementById("input");
-  const t=input.value.trim();
-  if(!t) return;
-
-  input.value="";
-
-  add("user",t);
-
-  mem.push({
-    role:"user",
-    content:t
-  });
-
-  const reply = ai(t);
-  const aiBox = add("ai","...");
-
-  type(aiBox,reply);
-
-  mem.push({
-    role:"ai",
-    content:reply
-  });
-
-  localStorage.setItem("mem",JSON.stringify(mem));
-}
-
-/* ======================
-   ✨ 打字效果（稳定版）
-====================== */
-function type(el,text){
-  el.innerText="";
-  let i=0;
-
-  function step(){
-    if(i<text.length){
-      el.innerText += text[i++];
-      requestAnimationFrame(step);
-    }
-  }
-  step();
-}
-
-/* ======================
-   🔁 关键修复：聊天恢复
-====================== */
-function restore(){
-
-  if(!mem.length) return;
-
-  mem.forEach(m=>{
-    add(m.role,m.content);
-  });
-
-}
-
-restore();
-
-/* ======================
-   🚀 BOOT（防卡死）
-====================== */
-setTimeout(()=>{
-  const b=document.getElementById("boot");
-  if(b){
-    b.style.display="none";
-  }
-},2000);
 
 </script>
 
