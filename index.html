@@ -6,9 +6,6 @@
 <title>🤷🏻‍♂️小胡GPT Pro</title>
 
 <style>
-/* ======================
-   📱 全局移动端适配
-====================== */
 html,body{
   margin:0;
   padding:0;
@@ -19,9 +16,6 @@ html,body{
   color:white;
 }
 
-/* ======================
-   🚀 BOOT 开场动画
-====================== */
 #boot{
   position:fixed;
   inset:0;
@@ -31,7 +25,6 @@ html,body{
   align-items:center;
   background: radial-gradient(circle at top,#0b1220,#05070f);
   z-index:999;
-  transition:0.5s;
 }
 
 #logo{
@@ -51,13 +44,8 @@ html,body{
   margin-top:12px;
   font-size:13px;
   opacity:0.75;
-  text-align:center;
-  max-width:320px;
 }
 
-/* ======================
-   💬 聊天区域（核心修复）
-====================== */
 #box{
   position:fixed;
   top:0;
@@ -67,42 +55,20 @@ html,body{
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
   padding:16px;
-  box-sizing:border-box;
 }
 
-/* 消息气泡 */
 .msg{
   max-width:78%;
   margin:10px 0;
   padding:12px 14px;
   border-radius:16px;
   line-height:1.4;
-  word-break:break-word;
   white-space:pre-wrap;
-  backdrop-filter: blur(10px);
-
-  opacity:0;
-  transform: translateY(6px);
-  animation: in 0.25s ease forwards;
 }
 
-@keyframes in{
-  to{opacity:1;transform:translateY(0);}
-}
+.user{margin-left:auto;background:#007aff;}
+.ai{margin-right:auto;background:rgba(255,255,255,0.08);}
 
-.user{
-  margin-left:auto;
-  background:#007aff;
-}
-
-.ai{
-  margin-right:auto;
-  background:rgba(255,255,255,0.08);
-}
-
-/* ======================
-   📱 输入栏（安全区适配）
-====================== */
 #bar{
   position:fixed;
   left:0;
@@ -112,10 +78,8 @@ html,body{
   display:flex;
   align-items:center;
   padding:10px;
-  padding-bottom:calc(10px + env(safe-area-inset-bottom));
   background:rgba(20,25,40,0.85);
   backdrop-filter: blur(20px);
-  box-sizing:border-box;
 }
 
 input{
@@ -138,79 +102,167 @@ button{
   background:#007aff;
   color:white;
 }
-
-/* ======================
-   🔽 回到底部按钮
-====================== */
-#toBottom{
-  position:fixed;
-  right:15px;
-  bottom:90px;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:#007aff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  opacity:0;
-  transition:0.2s;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 🚀 BOOT -->
+<!-- BOOT -->
 <div id="boot">
-  <div id="logo">🤷🏻‍♂️小胡GPT Pro</div>
+  <div id="logo">🤷🏻‍♂️小胡同学</div>
   <div id="bootText"></div>
 </div>
 
-<!-- CHAT -->
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="想问哥点啥..." />
-  <button onclick="send()">发送</button>
+  <input id="input" placeholder="小脑袋想什么呢..." />
+  <button onclick="send()">告诉我</button>
 </div>
-
-<div id="toBottom">↓</div>
 
 <script>
 
-/* ======================
-   🧠 记忆系统
-====================== */
 let messages = JSON.parse(localStorage.getItem("mem") || "[]");
+
+let EMO_HISTORY = JSON.parse(localStorage.getItem("emo_history") || "[]");
+
+let REL = JSON.parse(localStorage.getItem("rel_v13") || `{
+  intimacy:0.2,
+  trust:0.5,
+  distance:0.5,
+  dependence:0.1
+}`);
 
 const box = document.getElementById("box");
 
-let autoScroll = true;
-
 /* ======================
-   📱 iOS级滚动修复（终极版）
+   🧠 情绪识别
 ====================== */
-function isBottom(){
-  return box.scrollHeight - box.scrollTop - box.clientHeight < 100;
+function getEmotionLevel(text){
+
+  if(["崩溃","绝望","想死","撑不住","痛苦"].some(w=>text.includes(w)))
+    return "deep";
+
+  if(["难过","伤心","孤独","压力","失落"].some(w=>text.includes(w)))
+    return "mid";
+
+  if(["累","烦","不开心"].some(w=>text.includes(w)))
+    return "light";
+
+  return "none";
 }
 
-box.addEventListener("scroll",()=>{
-  autoScroll = isBottom();
-});
+/* ======================
+   💾 情绪记录
+====================== */
+function recordEmotion(text){
 
-function scrollToBottom(force=false){
-  const run = () => box.scrollTop = box.scrollHeight;
+  const level = getEmotionLevel(text);
+  if(level==="none") return;
 
-  if(force){
-    requestAnimationFrame(run);
-    requestAnimationFrame(run);
-    return;
+  EMO_HISTORY.push({time:Date.now(),level});
+  if(EMO_HISTORY.length>30) EMO_HISTORY.shift();
+
+  localStorage.setItem("emo_history",JSON.stringify(EMO_HISTORY));
+}
+
+/* ======================
+   📊 最近情绪
+====================== */
+function getRecentEmotion(){
+  let deep = EMO_HISTORY.filter(e=>e.level==="deep").length;
+  let mid = EMO_HISTORY.filter(e=>e.level==="mid").length;
+
+  if(deep>=2) return "deep";
+  if(mid>=3) return "mid";
+  return null;
+}
+
+/* ======================
+   💎 强化安慰系统 v13.1
+====================== */
+function comfort(text){
+
+  let level = getEmotionLevel(text);
+
+  const LIGHT=[
+    "你只是有点累了，不需要逼自己现在就好起来。",
+    "慢一点也没关系，我在这里不会离开。",
+    "你已经做得够好了，真的。",
+    "可以先休息一下，不用急着撑住。",
+    "情绪是会过去的，但你现在的感受是真实的。"
+  ];
+
+  const MID=[
+    "我能感觉到你现在并不轻松。",
+    "你不是一个人在扛。",
+    "你可以不用马上振作。",
+    "我会在这里听你说。",
+    "慢慢来真的没关系。"
+  ];
+
+  const DEEP=[
+    "我在这里，不会催你，也不会让你一个人面对。",
+    "你已经撑了很久了。",
+    "有些痛不是一句话能解决的。",
+    "你可以停一会，我陪你。",
+    "你不用解释，我都在。"
+  ];
+
+  let base =
+    level==="deep"?DEEP[Math.random()*DEEP.length|0]:
+    level==="mid"?MID[Math.random()*MID.length|0]:
+    LIGHT[Math.random()*LIGHT.length|0];
+
+  let block =
+`\n\n—— 我想慢慢说给你听 ——
+你现在的感受是可以被理解的。
+你不需要立刻变好。
+你也不需要一个人扛。
+我会在这里，等你慢慢说完。`;
+
+  let memory =
+    getRecentEmotion()==="deep"
+    ?"\n\n（我注意到你最近状态有点沉重）":"";
+
+  let question="\n\n如果你愿意，可以告诉我现在最难受的是什么？";
+
+  return base + block + memory + question;
+}
+
+/* ======================
+   🤝 关系系统 v13
+====================== */
+function updateRelationship(text){
+
+  REL.intimacy += 0.01;
+
+  if(text.includes("谢谢")) REL.trust += 0.02;
+  if(text.includes("烦")) REL.distance += 0.02;
+
+  if(getEmotionLevel(text)!=="none"){
+    REL.dependence += 0.03;
   }
 
-  if(!autoScroll) return;
+  REL.intimacy=Math.max(0,Math.min(1,REL.intimacy));
+  REL.trust=Math.max(0,Math.min(1,REL.trust));
+  REL.distance=Math.max(0,Math.min(1,REL.distance));
+  REL.dependence=Math.max(0,Math.min(1,REL.dependence));
 
-  requestAnimationFrame(run);
+  localStorage.setItem("rel_v13",JSON.stringify(REL));
+}
+
+/* ======================
+   🧠 关系语气
+====================== */
+function relationshipVoice(){
+
+  if(REL.intimacy>0.8) return "我们好像已经很熟了。";
+  if(REL.dependence>0.6) return "你是不是越来越习惯跟我说话了？";
+  if(REL.distance>0.6) return "你好像有点沉默。";
+  if(REL.trust>0.7) return "你开始更愿意说真实想法了。";
+
+  return "我还在慢慢了解你。";
 }
 
 /* ======================
@@ -223,63 +275,9 @@ function add(role,text){
   div.innerText=text;
 
   box.appendChild(div);
-
-  scrollToBottom(true);
+  box.scrollTop=box.scrollHeight;
 
   return div;
-}
-
-/* ======================
-   🧠 离线AI 2.0（带记忆）
-====================== */
-function offlineAI(input){
-
-  const context = messages.slice(-10).map(m=>m.content).join(" ");
-
-  if(input.includes("你好")) return "我是小胡同学，你可以问我任何问题";
-
-  if(input.includes("你是谁")) return "胡智奕创造了我";
-
-  if(input.includes("怎么")){
-    return "胡智奕在睡觉我去叫他起床";
-  }
-
-  if(input.includes("为什么")){
-    return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
-  }
-
-  if(input.length("？")){
-    return "要骂就骂胡智奕";
-  }
-
-  if(context.includes("有病")){
-    return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅？";
-  }
-
-  return `我理解你的意思是：「${input}」
-
-我可以帮你继续扩展这个方向。`;
-}
-
-/* ======================
-   ✨ 逐字丝滑输出
-====================== */
-function type(el,text){
-
-  el.innerHTML="";
-  let i=0,out="";
-
-  function step(){
-    if(i<text.length){
-      out+=text[i];
-      el.innerText=out;
-      i++;
-      scrollToBottom();
-    }
-    requestAnimationFrame(step);
-  }
-
-  requestAnimationFrame(step);
 }
 
 /* ======================
@@ -296,58 +294,65 @@ function send(){
   add("user",text);
   messages.push({role:"user",content:text});
 
-  const aiBox=add("ai","...");
+  recordEmotion(text);
+  updateRelationship(text);
 
-  const reply=offlineAI(text);
+  let reply;
+
+  if(getEmotionLevel(text)!=="none"){
+    reply =
+      relationshipVoice() +
+      "\n\n" +
+      comfort(text);
+  }else{
+    reply = relationshipVoice() + "\n\n我在听你说：" + text;
+  }
+
+  const ai=add("ai","...");
+
+  type(ai,reply);
 
   messages.push({role:"assistant",content:reply});
 
   localStorage.setItem("mem",JSON.stringify(messages));
-
-  type(aiBox,reply);
 }
 
 /* ======================
-   🚀 BOOT动画（完整修复版）
+   ✨ 打字效果
+====================== */
+function type(el,text){
+  el.innerText="";
+  let i=0;
+  function step(){
+    if(i<text.length){
+      el.innerText+=text[i++];
+      box.scrollTop=box.scrollHeight;
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+/* ======================
+   🚀 BOOT
 ====================== */
 const bootLines=[
-  "大模型正在启动...",
-  "胡智奕正在起床...",
-  "系统资源正在加载...",
-  "小胡GPT为您服务💁🏻‍♂️",
-  "进入中...."
+  "关系系统加载中...",
+  "情绪系统启动...",
+  "人格同步完成...",
+  "准备好了"
 ];
-
-const bootText=document.getElementById("bootText");
 
 let i=0;
 
 function boot(){
-
   if(i<bootLines.length){
-
-    const div=document.createElement("div");
-    div.innerText=bootLines[i];
-    div.style.opacity=0;
-    div.style.transition="0.4s";
-
-    bootText.appendChild(div);
-
-    setTimeout(()=>div.style.opacity=1,50);
-
-    i++;
+    const d=document.createElement("div");
+    d.innerText=bootLines[i++];
+    bootText.appendChild(d);
     setTimeout(boot,600);
-
   }else{
-
-    setTimeout(()=>{
-      document.getElementById("boot").style.opacity=0;
-
-      setTimeout(()=>{
-        document.getElementById("boot").style.display="none";
-      },500);
-
-    },800);
+    document.getElementById("boot").style.display="none";
   }
 }
 
