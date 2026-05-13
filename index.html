@@ -2,14 +2,15 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>小胡同学pro</title>
 
 <style>
+/* ===== iOS基础 ===== */
 body {
   margin:0;
-  font-family:Arial;
-  background:#0f172a;
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
+  background:#0b1220;
   color:white;
   overflow:hidden;
 }
@@ -22,122 +23,125 @@ body {
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at top,#1e293b,#0f172a);
+  background:radial-gradient(circle at top,#1e293b,#0b1220);
 }
 
 #bootText {
   max-width:600px;
   text-align:center;
-  font-size:18px;
-  min-height:60px;
-}
-
-.cursor {
-  display:inline-block;
-  width:8px;
-  background:white;
-  animation:blink 0.8s infinite;
-}
-
-@keyframes blink {
-  50% {opacity:0;}
+  font-size:16px;
+  min-height:50px;
+  opacity:0.9;
 }
 
 #enterBtn {
   margin-top:20px;
   padding:12px 18px;
   border:none;
-  border-radius:8px;
-  background:#2563eb;
+  border-radius:14px;
+  background:#007aff;
   color:white;
   opacity:0;
-  transition:0.5s;
 }
 
-/* ===== 聊天页 ===== */
+/* ===== Chat ===== */
 #chat {
   display:none;
   height:100vh;
   flex-direction:column;
 }
 
+/* iOS滚动 */
 #box {
   flex:1;
-  overflow:auto;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   padding:20px;
-  padding-bottom:100px;
+  padding-bottom:140px;
 }
 
+/* 气泡 */
 .msg {
-  max-width:75%;
+  max-width:78%;
   margin:10px 0;
-  padding:12px 16px;
-  border-radius:10px;
+  padding:12px 14px;
+  border-radius:18px;
+  font-size:15px;
+  line-height:1.4;
   white-space:pre-wrap;
+  backdrop-filter: blur(10px);
 }
 
 .user {
-  background:#2563eb;
+  background:#007aff;
   margin-left:auto;
 }
 
 .ai {
   background:rgba(255,255,255,0.08);
+  margin-right:auto;
 }
 
-#inputBox {
+/* 输入栏 iOS风 */
+#inputBar {
   position:fixed;
   bottom:0;
-  width:100%;
-  display:flex;
+  left:0;
+  right:0;
   padding:10px;
-  background:#111827;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  display:flex;
+  background:rgba(20,25,40,0.8);
+  backdrop-filter: blur(20px);
 }
 
 input {
   flex:1;
   padding:12px;
   border:none;
-  border-radius:8px;
+  border-radius:14px;
+  outline:none;
+  font-size:16px;
+  background:rgba(255,255,255,0.08);
+  color:white;
 }
 
 button {
   margin-left:10px;
-  padding:12px;
+  padding:12px 16px;
   border:none;
-  border-radius:8px;
-  background:#2563eb;
+  border-radius:14px;
+  background:#007aff;
   color:white;
 }
 
 /* 动画 */
 .fade {
-  animation:fade .2s ease-in;
+  animation:fade .2s ease;
 }
 @keyframes fade {
-  from{opacity:0;transform:translateY(5px);}
-  to{opacity:1;}
+  from {opacity:0; transform:translateY(6px);}
+  to {opacity:1;}
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== 启动页 ===== -->
+<!-- ===== Boot ===== -->
 <div id="boot">
-  <h2>🤖 小胡同学pro</h2>
+  <h2>🤷🏻‍♂️ 小胡同学pro</h2>
   <div id="bootText"></div>
-  <span class="cursor"></span>
-  <button id="enterBtn" onclick="startChat()">进入系统</button>
+  <button id="enterBtn" onclick="start()">Enter</button>
 </div>
 
-<!-- ===== 聊天页 ===== -->
+<!-- ===== Chat ===== -->
 <div id="chat">
   <div id="box"></div>
 
-  <div id="inputBox">
-    <input id="input" placeholder="输入你的问题..." />
-    <button onclick="send()">发送</button>
+  <div id="inputBar">
+    <input id="input" placeholder="Message..." />
+    <button onclick="send()">↑</button>
   </div>
 </div>
 
@@ -154,24 +158,23 @@ const MODELS = [
 
 let messages = [];
 
-/* ===== 启动动画 ===== */
-const bootText = "初始化AI系统...加载模型...连接服务器...完成 ✔";
-let i = 0;
-const bootEl = document.getElementById("bootText");
-const btn = document.getElementById("enterBtn");
+/* ===== Boot动画 ===== */
+const bootText = "Loading AI model... connecting server... ready ✔";
+let i=0;
+const bootEl=document.getElementById("bootText");
+const btn=document.getElementById("enterBtn");
 
-function typeBoot(){
-  if(i < bootText.length){
-    bootEl.innerHTML += bootText[i++];
-    setTimeout(typeBoot,50);
+function boot(){
+  if(i<bootText.length){
+    bootEl.innerHTML+=bootText[i++];
+    requestAnimationFrame(()=>setTimeout(boot,40));
   } else {
-    btn.style.opacity = 1;
+    btn.style.opacity=1;
   }
 }
+boot();
 
-setTimeout(typeBoot,800);
-
-function startChat(){
+function start(){
   document.getElementById("boot").style.display="none";
   document.getElementById("chat").style.display="flex";
 }
@@ -181,19 +184,20 @@ function add(role,text){
   const div=document.createElement("div");
   div.className="msg "+role+" fade";
   div.innerText=text;
-  document.getElementById("box").appendChild(div);
-  window.scrollTo(0,document.body.scrollHeight);
+  const box=document.getElementById("box");
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
   return div;
 }
 
-/* ===== 打字机 ===== */
+/* iOS级丝滑打字 */
 function type(el,text){
   let i=0;
   el.innerHTML="";
   function run(){
     if(i<text.length){
       el.innerHTML+=text[i++];
-      setTimeout(run,15);
+      requestAnimationFrame(()=>setTimeout(run,12));
     }
   }
   run();
@@ -211,17 +215,17 @@ async function send(){
   add("user",text);
   messages.push({role:"user",content:text});
 
-  const box=add("ai","思考中...");
+  const box=add("ai","...");
 
-  const reply=await askAI(text);
+  const reply=await askAI();
 
   messages.push({role:"assistant",content:reply});
 
   type(box,reply);
 }
 
-/* ===== AI核心（自动降级） ===== */
-async function askAI(text){
+/* ===== AI多模型 ===== */
+async function askAI(){
 
   for(let m of MODELS){
     try{
@@ -230,7 +234,7 @@ async function askAI(text){
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
           model:m,
-          messages:messages
+          messages
         })
       });
 
@@ -241,17 +245,7 @@ async function askAI(text){
     }catch(e){}
   }
 
-  return offline(text);
-}
-
-/* ===== 离线模式 ===== */
-function offline(text){
-
-  if(text.includes("你好")) return "你好🙂（离线模式）";
-  if(text.includes("你是谁")) return "我是离线AI助手";
-  if(text.includes("怎么")) return "建议拆分步骤思考🙂";
-
-  return "当前离线模式，但我仍然可以简单回应你🙂";
+  return "（离线模式）我仍然可以简单回应你🙂";
 }
 
 </script>
