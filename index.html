@@ -6,16 +6,21 @@
 <title>🤷🏻‍♂️小胡GPT Pro</title>
 
 <style>
-body{
+/* ======================
+   📱 全局移动端适配
+====================== */
+html,body{
   margin:0;
-  font-family:-apple-system;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont;
   background:#0b1220;
   color:white;
-  overflow:hidden;
 }
 
 /* ======================
-   🚀 BOOT（科幻开场）
+   🚀 BOOT 开场动画
 ====================== */
 #boot{
   position:fixed;
@@ -31,7 +36,6 @@ body{
 
 #logo{
   font-size:26px;
-  letter-spacing:2px;
   background: linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
@@ -52,16 +56,21 @@ body{
 }
 
 /* ======================
-   💬 CHAT
+   💬 聊天区域（核心修复）
 ====================== */
 #box{
-  height:100vh;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:70px;
   overflow-y:auto;
-  padding:20px;
-  padding-bottom:140px;
   -webkit-overflow-scrolling:touch;
+  padding:16px;
+  box-sizing:border-box;
 }
 
+/* 消息气泡 */
 .msg{
   max-width:78%;
   margin:10px 0;
@@ -70,10 +79,10 @@ body{
   line-height:1.4;
   word-break:break-word;
   white-space:pre-wrap;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
 
   opacity:0;
-  transform: translateY(8px);
+  transform: translateY(6px);
   animation: in 0.25s ease forwards;
 }
 
@@ -92,36 +101,60 @@ body{
 }
 
 /* ======================
-   📱 输入栏
+   📱 输入栏（安全区适配）
 ====================== */
 #bar{
   position:fixed;
-  bottom:0;
   left:0;
   right:0;
+  bottom:0;
+  height:70px;
   display:flex;
+  align-items:center;
   padding:10px;
-  background:rgba(20,25,40,0.8);
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+  background:rgba(20,25,40,0.85);
   backdrop-filter: blur(20px);
+  box-sizing:border-box;
 }
 
 input{
   flex:1;
-  padding:12px;
-  border-radius:12px;
+  height:44px;
+  font-size:16px;
   border:none;
   outline:none;
+  border-radius:12px;
+  padding:0 12px;
   background:rgba(255,255,255,0.08);
   color:white;
 }
 
 button{
   margin-left:10px;
-  padding:12px 16px;
+  padding:10px 14px;
   border:none;
   border-radius:12px;
   background:#007aff;
   color:white;
+}
+
+/* ======================
+   🔽 回到底部按钮
+====================== */
+#toBottom{
+  position:fixed;
+  right:15px;
+  bottom:90px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#007aff;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  transition:0.2s;
 }
 </style>
 </head>
@@ -138,24 +171,26 @@ button{
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="想问哥点啥..." />
+  <input id="input" placeholder="输入消息..." />
   <button onclick="send()">发送</button>
 </div>
+
+<div id="toBottom">↓</div>
 
 <script>
 
 /* ======================
-   🧠 MEMORY
+   🧠 记忆系统
 ====================== */
 let messages = JSON.parse(localStorage.getItem("mem") || "[]");
 
 const box = document.getElementById("box");
 
-/* ======================
-   📱 iOS级滚动（修复版）
-====================== */
 let autoScroll = true;
 
+/* ======================
+   📱 iOS级滚动修复（终极版）
+====================== */
 function isBottom(){
   return box.scrollHeight - box.scrollTop - box.clientHeight < 100;
 }
@@ -165,11 +200,17 @@ box.addEventListener("scroll",()=>{
 });
 
 function scrollToBottom(force=false){
-  if(!autoScroll && !force) return;
+  const run = () => box.scrollTop = box.scrollHeight;
 
-  requestAnimationFrame(()=>{
-    box.scrollTop = box.scrollHeight;
-  });
+  if(force){
+    requestAnimationFrame(run);
+    requestAnimationFrame(run);
+    return;
+  }
+
+  if(!autoScroll) return;
+
+  requestAnimationFrame(run);
 }
 
 /* ======================
@@ -193,35 +234,35 @@ function add(role,text){
 ====================== */
 function offlineAI(input){
 
-  const last = messages.slice(-8).map(m=>m.content).join(" ");
+  const context = messages.slice(-10).map(m=>m.content).join(" ");
 
-  if(input.includes("你好")) return "你好🙂 我是 NEURAL AI 2.0（离线模式），可以继续对话。";
+  if(input.includes("你好")) return "你好🙂 我是 NEURAL AI 2.0（离线模式）";
 
-  if(input.includes("你是谁")) return "我是运行在浏览器中的离线智能AI，具备基础记忆能力。";
+  if(input.includes("你是谁")) return "我是运行在浏览器中的离线智能AI系统";
 
   if(input.includes("怎么")){
-    return "我可以帮你拆解步骤，你具体想解决什么问题？";
+    return "我可以帮你拆解步骤，你可以说具体问题";
   }
 
   if(input.includes("为什么")){
-    return "这个问题可以从原因和逻辑两方面分析，你想深入哪一部分？";
+    return "这个问题可以从逻辑和原因分析，你想看哪一部分？";
   }
 
   if(input.length < 3){
-    return "可以说得更具体一点，我需要更多信息🙂";
+    return "可以说详细一点，我需要更多信息🙂";
   }
 
-  if(last.includes("代码")){
-    return "关于代码，我可以帮你优化结构或修复问题，你卡在哪一步？";
+  if(context.includes("代码")){
+    return "关于代码，我可以帮你优化或修复，你卡在哪一步？";
   }
 
   return `我理解你的意思是：「${input}」
 
-我可以帮你继续扩展这个思路，你可以说得更具体一点。`;
+我可以帮你继续扩展这个方向。`;
 }
 
 /* ======================
-   ✨ 逐字输出
+   ✨ 逐字丝滑输出
 ====================== */
 function type(el,text){
 
@@ -229,15 +270,12 @@ function type(el,text){
   let i=0,out="";
 
   function step(){
-
     if(i<text.length){
       out+=text[i];
       el.innerText=out;
       i++;
-
       scrollToBottom();
     }
-
     requestAnimationFrame(step);
   }
 
@@ -256,7 +294,6 @@ function send(){
   input.value="";
 
   add("user",text);
-
   messages.push({role:"user",content:text});
 
   const aiBox=add("ai","...");
@@ -271,13 +308,13 @@ function send(){
 }
 
 /* ======================
-   🚀 BOOT动画（已整合）
+   🚀 BOOT动画（完整修复版）
 ====================== */
 const bootLines=[
-  "Initializing neural core...",
-  "Loading memory system...",
-  "Activating offline intelligence...",
-  "Optimizing iOS interface...",
+  "大模型正在启动...",
+  "胡智奕正在起床...",
+  "系统资源正在加载...",
+  "一切正在就绪...",
   "Ready."
 ];
 
