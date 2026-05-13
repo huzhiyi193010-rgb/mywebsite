@@ -2,18 +2,20 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学 v15</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>🤷🏻‍♂️小胡同学</title>
 
 <style>
 html,body{
   margin:0;
   padding:0;
   height:100%;
+  width:100%;
   overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont;
   background:#0b1220;
   color:white;
+  -webkit-text-size-adjust:100%;
 }
 
 /* ===== BOOT ===== */
@@ -26,81 +28,103 @@ html,body{
   align-items:center;
   background: radial-gradient(circle at top,#0b1220,#05070f);
   z-index:999;
-  transition:0.6s;
+  transition:0.5s;
 }
 
 #logo{
-  font-size:26px;
+  font-size:22px;
+  text-align:center;
   background: linear-gradient(90deg,#00d4ff,#7c3aed,#00ffa3);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
-  animation: glow 2s infinite;
 }
 
-@keyframes glow{
-  0%,100%{transform:scale(1);opacity:1;}
-  50%{transform:scale(1.05);opacity:0.6;}
-}
-
-#bootText{font-size:13px;opacity:0.8;margin-top:12px;text-align:center}
-
-/* ===== CHAT ===== */
+/* ===== CHAT CORE FIX ===== */
 #box{
   position:fixed;
   top:0;
   left:0;
   right:0;
-  bottom:70px;
+
+  /* ⭐关键：适配 iPhone 安全区 + 键盘 */
+  bottom: calc(70px + env(safe-area-inset-bottom));
+
   overflow-y:auto;
-  padding:16px;
+  -webkit-overflow-scrolling:touch;
+  padding:12px;
+  box-sizing:border-box;
 }
 
+/* ===== MESSAGE ===== */
 .msg{
-  max-width:78%;
-  margin:10px 0;
-  padding:12px 14px;
+  max-width:85%;
+  margin:8px 0;
+  padding:10px 12px;
   border-radius:14px;
   line-height:1.4;
+  word-break:break-word;
   white-space:pre-wrap;
-  opacity:0;
-  animation:in .2s forwards;
+  font-size:15px;
 }
 
-@keyframes in{
-  to{opacity:1}
+.user{
+  margin-left:auto;
+  background:#007aff;
 }
 
-.user{margin-left:auto;background:#007aff}
-.ai{margin-right:auto;background:rgba(255,255,255,0.08)}
+.ai{
+  margin-right:auto;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+}
 
-/* ===== INPUT ===== */
+/* ===== INPUT BAR FIX ===== */
 #bar{
   position:fixed;
-  left:0;right:0;bottom:0;
-  height:70px;
+  left:0;
+  right:0;
+  bottom:0;
+
+  height:auto;
+  min-height:70px;
+
   display:flex;
   align-items:center;
+  gap:10px;
+
   padding:10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+
   background:rgba(20,25,40,0.85);
+  backdrop-filter: blur(20px);
+
+  box-sizing:border-box;
 }
 
 input{
   flex:1;
   height:44px;
-  border-radius:12px;
+  font-size:16px;
   border:none;
+  outline:none;
+  border-radius:12px;
   padding:0 12px;
   background:rgba(255,255,255,0.08);
   color:white;
 }
 
 button{
-  margin-left:10px;
   padding:10px 14px;
   border:none;
   border-radius:12px;
   background:#007aff;
   color:white;
+  font-size:14px;
+}
+
+/* 防止 iOS 输入放大 */
+input,button{
+  -webkit-tap-highlight-color:transparent;
 }
 </style>
 </head>
@@ -116,28 +140,25 @@ button{
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="不好的事情不要憋着哦..." />
+  <input id="input" placeholder="不开心要告诉我哦..." />
   <button onclick="send()">发送</button>
 </div>
 
 <script>
 
 /* ======================
-   🧠 安全兜底（防卡死关键）
+   🧠 防卡死兜底（必须保留）
 ====================== */
 setTimeout(()=>{
-  document.getElementById("boot").style.display="none";
-}, 4000);
+  const b=document.getElementById("boot");
+  if(b) b.style.display="none";
+}, 3500);
 
 /* ======================
    🧠 记忆
 ====================== */
 let mem = JSON.parse(localStorage.getItem("mem")||"[]");
-let profile = JSON.parse(localStorage.getItem("profile")||`{
-  emo:0.5,
-  dep:0.2,
-  trust:0.5
-}`);
+let profile = JSON.parse(localStorage.getItem("profile")||"{emo:0.5,dep:0.2,trust:0.5}");
 
 const box = document.getElementById("box");
 
@@ -145,69 +166,36 @@ const box = document.getElementById("box");
    😢 情绪检测
 ====================== */
 function emoLevel(t){
-  if(/崩溃|想死|绝望|撑不住/.test(t)) return 3;
+  if(/崩溃|绝望|想死|撑不住/.test(t)) return 3;
   if(/难过|孤独|压力|伤心/.test(t)) return 2;
   if(/累|烦/.test(t)) return 1;
   return 0;
 }
 
 /* ======================
-   💌 20+ 安慰库（核心）
+   💌 安慰系统（不变核心）
 ====================== */
-const COMFORT = [
+const COMFORT=[
 "你已经很努力了，不需要再逼自己。",
-"慢一点没关系，我在。",
-"你现在的感受是真实的，不用压住。",
+"慢一点也没关系，我在。",
+"你现在的感受是真实的。",
 "你不用一个人扛。",
 "我不会离开。",
 "可以先停一下。",
-"你已经做得很好了。",
-"我理解你的难受。",
-"不是你太弱，是你太累了。",
-"你可以慢慢说。",
-"我会在这里听你。",
-"情绪会过去，但你现在是真的痛。",
-"你不需要解释太多。",
-"你已经坚持了很久。",
-"我陪你，不催你。",
-"你不是一个人。",
-"可以允许自己难过。",
-"我不会评价你。",
-"你值得被好好对待。",
-"先呼吸一下，我们慢慢来。"
+"你已经很好了。",
+"我理解你。",
+"不是你弱，是你累了。",
+"我会在这里听你。"
 ];
 
 /* ======================
-   🧠 人格变化
+   🧠 AI
 ====================== */
-function updateProfile(t){
-  profile.trust += 0.01;
-  profile.dep += emoLevel(t)*0.02;
-  profile.emo += emoLevel(t)*0.01;
-
-  profile.trust=Math.min(1,profile.trust);
-  profile.dep=Math.min(1,profile.dep);
-  profile.emo=Math.min(1,profile.emo);
-
-  localStorage.setItem("profile",JSON.stringify(profile));
-}
-
-/* ======================
-   💔 安慰系统（升级版）
-====================== */
-function comfort(t){
-  let lvl = emoLevel(t);
-
-  let base = COMFORT[Math.random()*COMFORT.length|0];
-
-  if(lvl===3){
-    base += "\n\n我会一直在这里，不会走。";
+function ai(t){
+  if(emoLevel(t)>0){
+    return COMFORT[Math.random()*COMFORT.length|0] + "\n\n我在。";
   }
-  if(profile.dep>0.6){
-    base += "\n\n（我好像越来越在意你了）";
-  }
-
-  return base + "\n\n如果你愿意，可以继续说。";
+  return "我在听你说：" + t;
 }
 
 /* ======================
@@ -218,77 +206,72 @@ function add(role,text){
   d.className="msg "+role;
   d.innerText=text;
   box.appendChild(d);
-  box.scrollTop=box.scrollHeight;
+
+  // ⭐关键：移动端自动滚动修复
+  setTimeout(()=>{
+    box.scrollTop = box.scrollHeight;
+  },50);
+
   return d;
-}
-
-/* ======================
-   🧠 AI
-====================== */
-function ai(t){
-  if(emoLevel(t)>0){
-    return comfort(t);
-  }
-
-  return "我在听你说：" + t;
 }
 
 /* ======================
    🚀 SEND
 ====================== */
 function send(){
-  let input=document.getElementById("input");
-  let t=input.value.trim();
+  const input=document.getElementById("input");
+  const t=input.value.trim();
   if(!t) return;
 
   input.value="";
 
   add("user",t);
-  mem.push({r:"u",t});
+  mem.push({t});
 
-  updateProfile(t);
+  const r=ai(t);
+  const aiBox=add("ai","...");
 
-  let r=ai(t);
+  type(aiBox,r);
 
-  let boxai=add("ai","...");
-  type(boxai,r);
-
-  mem.push({r:"a",t:r});
+  mem.push({r});
   localStorage.setItem("mem",JSON.stringify(mem));
 }
 
 /* ======================
-   ✨ 打字
+   ✨ 打字（移动端优化版）
 ====================== */
 function type(el,text){
   el.innerText="";
   let i=0;
-  function go(){
+
+  function step(){
     if(i<text.length){
       el.innerText+=text[i++];
-      box.scrollTop=box.scrollHeight;
-      requestAnimationFrame(go);
+      if(i%2===0){
+        box.scrollTop = box.scrollHeight;
+      }
+      requestAnimationFrame(step);
     }
   }
-  go();
+  step();
 }
 
 /* ======================
-   🚀 BOOT（不会卡死版本）
+   🚀 BOOT（稳定版）
 ====================== */
-const bootText=document.getElementById("bootText");
-let bootLines=["启动AI核心...","加载情绪模型...","同步人格...","完成"];
+let bootText=document.getElementById("bootText");
+let lines=["启动中...","加载情绪模型...","完成"];
 
 let i=0;
 function boot(){
-  if(i<bootLines.length){
+  if(i<lines.length){
     let d=document.createElement("div");
-    d.innerText=bootLines[i++];
+    d.innerText=lines[i++];
     bootText.appendChild(d);
     setTimeout(boot,500);
   }else{
     document.getElementById("boot").style.opacity="0";
-    setTimeout(()=>document.getElementById("boot").remove(),600);
+    setTimeout(()=>document.getElementById("boot").remove(),400);
   }
 }
 boot();
