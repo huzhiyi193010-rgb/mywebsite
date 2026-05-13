@@ -163,7 +163,7 @@ button{
 
 <!-- 🚀 BOOT -->
 <div id="boot">
-  <div id="logo">NEURAL AI 2.0</div>
+  <div id="logo">🤷🏻‍♂️小胡GPT Pro</div>
   <div id="bootText"></div>
 </div>
 
@@ -171,7 +171,7 @@ button{
 <div id="box"></div>
 
 <div id="bar">
-  <input id="input" placeholder="输入消息..." />
+  <input id="input" placeholder="想问哥点啥..." />
   <button onclick="send()">发送</button>
 </div>
 
@@ -236,16 +236,16 @@ function offlineAI(input){
 
   const context = messages.slice(-10).map(m=>m.content).join(" ");
 
-  if(input.includes("你好")) return "你好🙂 我是 NEURAL AI 2.0（离线模式）";
+  if(input.includes("你好")) return "我是小胡同学，你可以问我任何问题";
 
-  if(input.includes("你是谁")) return "我是运行在浏览器中的离线智能AI系统";
+  if(input.includes("你是谁")) return "胡智奕创造了我";
 
   if(input.includes("怎么")){
-    return "我可以帮你拆解步骤，你可以说具体问题";
+    return "胡智奕在睡觉我去叫他起床";
   }
 
   if(input.includes("为什么")){
-    return "这个问题可以从逻辑和原因分析，你想看哪一部分？";
+    return "都跟你说了胡智奕在睡觉🙎🏻‍♂️";
   }
 
   if(input.length < 3){
@@ -253,7 +253,7 @@ function offlineAI(input){
   }
 
   if(context.includes("代码")){
-    return "关于代码，我可以帮你优化或修复，你卡在哪一步？";
+    return "你直接给胡智奕发微信不就完了嘛ㅅㅂ😅？";
   }
 
   return `我理解你的意思是：「${input}」
