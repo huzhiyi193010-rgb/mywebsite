@@ -334,7 +334,7 @@ button:hover{
     <header>
 
       <div class="title">
-        🤖 3D AI Assistant
+        🤖小胡同学pro
       </div>
 
       <select id="modelSelect">
@@ -357,7 +357,7 @@ button:hover{
 
       <input
       id="userInput"
-      placeholder="输入你的问题..."
+      placeholder="有什么问题问你哥..."
       />
 
       <button onclick="sendMessage()">
@@ -409,7 +409,7 @@ async function sendMessage(){
   });
 
   const aiBox =
-  addMessage("ai","AI思考中...");
+  addMessage("小胡思考中...");
 
   try{
 
@@ -438,7 +438,7 @@ async function sendMessage(){
 
     const reply =
     data.choices?.[0]?.message?.content
-    || "没有回复";
+    || "小胡一时半会想不出来呢...";
 
     messages.push({
       role:"assistant",
