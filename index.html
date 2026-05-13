@@ -2,87 +2,70 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>🤷🏻‍♂️小胡同学 v15 FIX MOBILE</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>🤷🏻‍♂️小胡同学</title>
 <style>
-
-/* ======================
-   📱 手机适配修复核心
-====================== */
 html,body{
   margin:0;
   padding:0;
   height:100%;
   overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   background:#0b1220;
-  color:white;
+  color:#f5f7fa;
 }
-
-/* ⭐ 关键修复：安全高度 */
 body{
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
-
-/* ======================
-   💬 聊天区域修复
-====================== */
 #box{
   position:fixed;
   top:0;
   left:0;
   right:0;
-
-  /* ⭐ 修复：避免被输入框挡住 */
   bottom: calc(70px + env(safe-area-inset-bottom));
-
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-
   padding:16px;
   box-sizing:border-box;
 }
-
-/* ======================
-   🧠 消息气泡
-====================== */
+#box::-webkit-scrollbar{width:3px;}
+#box::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
 .msg{
-  max-width:78%;
+  max-width:80%;
   margin:10px 0;
-  padding:12px 14px;
-  border-radius:14px;
+  padding:13px 15px;
+  border-radius:16px;
   white-space:pre-wrap;
   word-break:break-word;
+  line-height:1.65;
+  font-size:15px;
 }
-
-.user{margin-left:auto;background:#007aff;}
-.ai{margin-right:auto;background:rgba(255,255,255,0.08);}
-
-/* ======================
-   ⌨️ 输入栏修复（核心）
-====================== */
+.user{
+  margin-left:auto;
+  background:#007aff;
+  border-bottom-right-radius:4px;
+}
+.ai{
+  margin-right:auto;
+  background:rgba(255,255,255,0.07);
+  border-bottom-left-radius:4px;
+}
 #bar{
   position:fixed;
   left:0;
   right:0;
   bottom:0;
-
   height:70px;
   display:flex;
   align-items:center;
-
-  padding:10px;
+  padding:10px 12px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
-
-  background:rgba(20,25,40,0.85);
+  background:rgba(15,22,36,0.88);
   backdrop-filter: blur(20px);
-
+  -webkit-backdrop-filter: blur(20px);
   box-sizing:border-box;
 }
-
-/* ⭐ 防止键盘挤压（安卓 + iOS） */
 input{
   flex:1;
   height:44px;
@@ -91,146 +74,152 @@ input{
   outline:none;
   border-radius:12px;
   padding:0 12px;
-
   background:rgba(255,255,255,0.08);
-  color:white;
+  color:#fff;
 }
-
+input::placeholder{color:rgba(255,255,255,0.4);}
 button{
   margin-left:10px;
   padding:10px 14px;
   border:none;
   border-radius:12px;
   background:#007aff;
-  color:white;
+  color:#fff;
+  font-size:15px;
 }
-
-/* ======================
-   📱 防键盘遮挡优化
-====================== */
 @supports (-webkit-touch-callout: none) {
-  #bar{
-    position: fixed;
-  }
+  #bar{ position: fixed; }
 }
-
 </style>
 </head>
-
 <body>
-
 <div id="box"></div>
-
 <div id="bar">
-  <input id="input" placeholder="说点什么..." />
+  <input id="input" placeholder="想说什么都可以慢慢讲..." />
   <button onclick="send()">发送</button>
 </div>
 
 <script>
-
-/* ======================
-   🧠 原系统（完全不改）
-====================== */
-let messages = JSON.parse(localStorage.getItem("mem") || "[]");
+let messages = JSON.parse(localStorage.getItem("real_chat_mem") || "[]");
 const box = document.getElementById("box");
+// 记录用过的回复，避免重复
+let usedReplys = JSON.parse(localStorage.getItem("used_replys") || "[]");
 
-let emotionScore = 0.5;
+// 分类语义库：精准匹配、事事有回应、不答非所问
+const chatLib = {
+  // 疲惫心累
+  tired: [
+    "能感觉到你真的挺累的，不用硬撑着假装没事。",
+    "心里和身体都熬得好辛苦，停下来歇一歇没关系的。",
+    "看得出来你已经撑了很久了，允许自己放松一下吧。",
+    "累不是你的错，只是你承担的东西太多了。"
+  ],
+  // 难过想哭
+  sad: [
+    "难过就不用忍着，想哭就好好释放一下。",
+    "我能接住你的情绪，不用在我面前假装坚强。",
+    "心里堵得慌的感觉我懂，慢慢说给我听就好。",
+    "不用逼着自己开心，情绪本来就需要被好好安放。"
+  ],
+  // 孤独孤单
+  lonely: [
+    "越懂事的人越容易孤独，我一直都陪着你呢。",
+    "没人懂的滋味真的很难受，我愿意认真懂你。",
+    "看似安静独处，其实心里很渴望被理解对吧。",
+    "不用勉强自己合群，我做你安心的倾听就好。"
+  ],
+  // 焦虑迷茫
+  confused: [
+    "迷茫的时候不用急着找答案，慢慢来就好。",
+    "心里慌慌的、不知道该往哪走的感觉我明白。",
+    "不用逼自己立刻做出选择，给自己一点时间。",
+    "很多路都是慢慢走出来的，不用现在就想通透。"
+  ],
+  // 内耗想太多
+  overthink: [
+    "你总是习惯性想太多，把所有情绪都自己消化。",
+    "心思太细腻的人，最容易跟自己过不去。",
+    "别反复纠结已经发生和没发生的事，放过自己一点。",
+    "敏感的人天生共情力强，也最容易内耗委屈。"
+  ],
+  // 自卑自我否定
+  inferior: [
+    "你总是低估自己，其实你已经很温柔很优秀了。",
+    "别总盯着自己的缺点，你身上闪光点很多的。",
+    "不用拿别人的标准苛责自己，做你自己就够了。",
+    "你值得被善待，也值得被好好偏爱。"
+  ],
+  // 崩溃绝望
+  break: [
+    "我知道你现在快要扛不住了，不用硬撑坚强。",
+    "再难熬的时刻我都在，不会留你一个人。",
+    "你不用假装没事，你的崩溃我都愿意接纳。",
+    "能走到现在你已经很了不起了，别轻易放弃自己。"
+  ],
+  // 安全感/会不会离开
+  relationship: [
+    "我不会因为你情绪不好就疏远你，一直都在。",
+    "不管你安静、低落还是情绪化，我都不会走。",
+    "你不用害怕被丢下，我会稳稳陪着你。",
+    "在我这里你可以完全安心，不用患得患失。"
+  ],
+  // 日常闲聊感慨
+  normal: [
+    "我在认真听你说，你可以接着往下讲。",
+    "原来是这样，能理解你此刻的感受。",
+    "嗯，我懂你想表达的意思。",
+    "慢慢说就好，我一直认真听着。",
+    "我在呢，你想说什么都可以尽情说。"
+  ]
+};
 
-/* ===== 情绪识别 ===== */
-function detectEmotion(text){
-  if(["想死","绝望","崩溃","撑不住"].some(w=>text.includes(w))) return "deep";
-  if(["孤独","焦虑","压力","空虚"].some(w=>text.includes(w))) return "mid";
-  if(["累","烦","难过"].some(w=>text.includes(w))) return "light";
-  return "none";
+// 语义关键词匹配
+function getMoodType(text){
+  let s = text.toLowerCase();
+  if(/累|疲惫|心累|没劲|不想动/.test(s)) return "tired";
+  if(/难过|想哭|委屈|心情不好|丧/.test(s)) return "sad";
+  if(/孤独|孤单|没人懂|一个人/.test(s)) return "lonely";
+  if(/迷茫|焦虑|慌|不知道怎么办|未来/.test(s)) return "confused";
+  if(/想太多|胡思乱想|内耗|心思重/.test(s)) return "overthink";
+  if(/自卑|没用|不好|自我否定|配不上/.test(s)) return "inferior";
+  if(/崩溃|撑不住|绝望|不想坚持|活着没意思/.test(s)) return "break";
+  if(/会离开|会一直在|会走吗|抛弃|陪着我/.test(s)) return "relationship";
+  return "normal";
 }
 
-/* ===== 关系问题 ===== */
-function isBondQuestion(text){
-  return ["会一直在","会离开","会陪我","会走吗","会不会不见"].some(w=>text.includes(w));
+// 获取不重复回复
+function getNoRepeatReply(type){
+  let list = chatLib[type];
+  let rest = list.filter(item => !usedReplys.includes(item));
+  // 用完重置
+  if(rest.length === 0){
+    usedReplys = [];
+    localStorage.setItem("used_replys", JSON.stringify(usedReplys));
+    rest = list;
+  }
+  let pick = rest[Math.floor(Math.random() * rest.length)];
+  usedReplys.push(pick);
+  localStorage.setItem("used_replys", JSON.stringify(usedReplys));
+  return pick;
 }
 
-/* ===== 成长 ===== */
-function evolve(text){
-  if(detectEmotion(text)!=="none") emotionScore+=0.05;
-  emotionScore=Math.min(1,emotionScore);
-}
-
-/* ===== 安慰系统（原版保留） ===== */
-function comfort(text){
-
-  const level = detectEmotion(text);
-
-  const LIGHT=[
-    "你已经很累了，可以慢一点。",
-    "不用逼自己现在变好。",
-    "你已经做得很好了。"
-  ];
-
-  const MID=[
-    "我能感觉你现在不太好。",
-    "你不是一个人。",
-    "慢慢说没关系。"
-  ];
-
-  const DEEP=[
-    "我在这里，不会走。",
-    "你可以停下来。",
-    "不用解释，我在。"
-  ];
-
-  let pool =
-    level==="deep"?DEEP:
-    level==="mid"?MID:LIGHT;
-
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-
-/* ===== 关系回复 ===== */
-function bondReply(){
-  if(emotionScore>0.7) return "我不会轻易离开你。";
-  if(emotionScore>0.4) return "我会在这里。";
-  return "我在听你说。";
-}
-
-/* ===== AI核心 ===== */
+// 主回复逻辑：精准匹配、事事有回应
 function reply(text){
-
-  evolve(text);
-
-  let think=["……让我想一下。","我在整理你的话。"];
-  let base=think[Math.floor(Math.random()*think.length)];
-
-  if(isBondQuestion(text)){
-    return base+"\n\n"+bondReply();
-  }
-
-  if(detectEmotion(text)!=="none"){
-    return base+"\n\n"+comfort(text);
-  }
-
-  return base+"\n\n我理解你的意思。";
+  let type = getMoodType(text);
+  return getNoRepeatReply(type);
 }
 
-/* ======================
-   💬 UI
-====================== */
+// 渲染消息
 function add(role,text){
   const d=document.createElement("div");
   d.className="msg "+role;
   d.innerText=text;
   box.appendChild(d);
-
-  /* ⭐ 修复滚动（手机关键） */
-  setTimeout(()=>{
-    box.scrollTop = box.scrollHeight;
-  },10);
-
+  setTimeout(()=>box.scrollTop = box.scrollHeight,10);
   return d;
 }
 
-/* ======================
-   ✨ 打字（防卡死）
-====================== */
+// 打字机
 function type(el,text){
   el.innerText="";
   let i=0;
@@ -238,43 +227,34 @@ function type(el,text){
     if(i<text.length){
       el.innerText+=text[i++];
       box.scrollTop=box.scrollHeight;
-      setTimeout(step,12);
+      setTimeout(step,15);
     }
   }
   step();
 }
 
-/* ======================
-   🚀 SEND
-====================== */
+// 发送
 function send(){
-
   const input=document.getElementById("input");
   const text=input.value.trim();
   if(!text) return;
-
   input.value="";
-
   add("user",text);
-
   const ai=add("ai","...");
-
   const res=reply(text);
-
   type(ai,res);
-
   messages.push({role:"user",content:text});
   messages.push({role:"assistant",content:res});
-
-  localStorage.setItem("mem",JSON.stringify(messages));
+  localStorage.setItem("real_chat_mem",JSON.stringify(messages));
 }
 
-/* ======================
-   🔄 恢复
-====================== */
+// 恢复历史
 messages.forEach(m=>add(m.role,m.content));
 
+// 回车发送
+document.getElementById("input").addEventListener("keydown",e=>{
+  if(e.key==="Enter") send();
+});
 </script>
-
 </body>
 </html>
